@@ -1,1 +1,33 @@
- 
+---
+
+- name: create k0s initial controller service with install command
+  k0s:
+    install: controller
+    config: "{{ k0s_config_dir }}/k0s.yaml"
+    args: "{{ extra_args | default([]) }}"
+
+  # command:
+  #   k0s install controller --config {{ k0s_config_dir }}/k0s.yaml {{ extra_args | default('') }}
+  register: install_initial_controller_cmd
+  changed_when:
+    - install_initial_controller_cmd | length > 0
+
+- name: arm specific systemd drop-in
+  block:
+    - name: create k0scontroller service drop-in directory
+      file:
+        path: /etc/systemd/system/k0scontroller.service.d
+        state: directory
+        mode: 0750
+
+    - name: create overwrite.conf
+      template:
+        src: init/systemd/overwrite.conf.j2
+        dest: /etc/systemd/system/k0scontroller.service.d/overwrite.conf
+
+  when:
+    - (ansible_facts.architecture is search("arm") and
+       ansible_facts.userspace_bits == "64" ) or
+      ansible_facts.architecture is search("aarch64")
+
+...

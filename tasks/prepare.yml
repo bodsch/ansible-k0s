@@ -22,19 +22,13 @@
   package:
     update_cache: true
 
-- name: define delegate instance for download handling
-  set_fact:
-    k0s_delegate_to: "{{ ansible_host }}"
-    k0s_local_tmp_directory: "{{
-        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-        default('/var/cache/ansible/k0s', true) }}/{{ k0s_version }}"
-  when:
-    - k0s_direct_download
-
 - name: install dependency
   package:
     name: "{{ k0s_requirements }}"
     state: present
+  when:
+    - k0s_requirements is defined
+    - k0s_requirements | count > 0
 
 - block:
     - name: get latest release
@@ -57,6 +51,15 @@
         k0s_version: "{{ _latest_release.json.tag_name[1:] }}"
   when:
     - k0s_version == "latest"
+
+- name: define delegate instance for download handling
+  set_fact:
+    k0s_delegate_to: "{{ ansible_host }}"
+    k0s_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/k0s', true) }}/{{ k0s_main_version }}"
+  when:
+    - k0s_direct_download
 
 - name: detect our installation path '{{ k0s_install_path | dirname }}'
   stat:

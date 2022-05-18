@@ -1,0 +1,7 @@
+---
+
+k0s_version: latest
+
+ansible_user: root
+
+...

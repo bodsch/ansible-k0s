@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+TOX_ARGS=
+
+if [ -n "${TOX_SCENARIO}" ]
+then
+  TOX_ARGS="--scenario-name ${TOX_SCENARIO}"
+fi
+
+tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule destroy ${TOX_ARGS}

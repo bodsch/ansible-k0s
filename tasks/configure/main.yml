@@ -5,38 +5,39 @@
   file:
     path: "{{ item }}"
     state: directory
-    mode: 0755
-    owner: "{{ k0s_system_user }}"
-    group: "{{ k0s_system_group }}"
+    mode: 0775
+    #owner: "{{ k0s_system_user }}"
+    #group: "{{ k0s_system_group }}"
   loop:
     - "{{ k0s_config_dir }}"
     - "{{ k0s_data_dir }}"
     - "{{ k0s_libexec_dir }}"
 
 - name: write the custom k0s config file
+  become: true
   template:
     src: k0s/k0s.yml.j2
     dest: "{{ k0s_config_dir }}/k0s.yaml"
-    owner: "{{ k0s_system_user }}"
-    group: "{{ k0s_system_group }}"
-    mode: 0600
+    #owner: "{{ k0s_system_user }}"
+    #group: "{{ k0s_system_group }}"
+    mode: 0660
   when:
     - k0s_use_custom_config
 
 - name: generate default k0s config file
-  become: true
+  # become: true
   block:
     - name: create default k0s config
-      register: default_k0s_config
       command: k0s default-config > {{ k0s_config_dir }}/k0s.yaml
+      register: default_k0s_config
 
     - name: store default k0s config
       copy:
         dest: "{{ k0s_config_dir }}/k0s.yaml"
         content: "{{ default_k0s_config.stdout }}"
-        owner: "{{ k0s_system_user }}"
-        group: "{{ k0s_system_group }}"
-        mode: 0600
+        #owner: "{{ k0s_system_user }}"
+        #group: "{{ k0s_system_group }}"
+        mode: 0660
   when:
     - not k0s_use_custom_config
 

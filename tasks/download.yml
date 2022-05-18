@@ -14,7 +14,7 @@
 # https://github.com/k0sproject/k0s/releases/download/v1.23.6%2Bk0s.1/k0s-1.23.6%2Bk0s.1-amd64
 # https://github.com/k0sproject/k0s/releases/download/{{ k0s_version }}/k0s-{{ k0s_version }}-amd64
 
-- name: download k0s binary archive
+- name: "download k0s binary {{ 'to ansible controller' if k0s_direct_download else '' }}"
   become: false
   delegate_to: "{{ k0s_delegate_to }}"
   get_url:

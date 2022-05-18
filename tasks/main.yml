@@ -6,8 +6,10 @@
   tags:
     - download
     - install
+    - configure
+    - initial_configure
 
-- name: download archive
+- name: download binary
   include_tasks: download.yml
   when:
     - not stat_k0s_binary.stat.exists

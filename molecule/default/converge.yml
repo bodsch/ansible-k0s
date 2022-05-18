@@ -1,0 +1,28 @@
+---
+- name: download and install
+  hosts: all
+  any_errors_fatal: true
+  gather_facts: true
+
+  environment:
+    NETRC: ''
+
+  roles:
+    - role: ansible-k0s
+      tags:
+        - download
+        - install
+        - configure
+
+- name: initial controller
+  hosts: initial_controller
+  any_errors_fatal: true
+  gather_facts: true
+
+  environment:
+    NETRC: ''
+
+  roles:
+    - role: ansible-k0s
+      tags:
+        - initial_configure

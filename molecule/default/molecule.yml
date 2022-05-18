@@ -1,0 +1,126 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: docker
+
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .
+  flake8 .
+
+platforms:
+  - name: k0s-1
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    capabilities:
+      - SYS_ADMIN
+    tmpfs:
+      - /run
+      - /tmp
+    groups:
+      - initial_controller
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      #- /lib/modules:/lib/modules:ro
+      # needs only by ubuntu 20.04
+      #- /var/lib/docker/overlay2:/var/lib/docker/overlay2:rw
+    network_mode: default
+    docker_networks:
+      - name: k8s
+        ipam_config:
+          - subnet: "10.20.0.0/24"
+            gateway: "10.20.0.1"
+    networks:
+      - name: k8s
+        ipv4_address: "10.20.0.10"
+
+  - name: k0s-2
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    capabilities:
+      - SYS_ADMIN
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - controller
+    networks:
+      - name: k8s
+        ipv4_address: "10.20.0.11"
+
+  - name: k0s-3
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    capabilities:
+      - SYS_ADMIN
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - worker
+    networks:
+      - name: k8s
+        ipv4_address: "10.20.0.12"
+
+  - name: k0s-4
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    capabilities:
+      - SYS_ADMIN
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - worker
+    networks:
+      - name: k8s
+        ipv4_address: "10.20.0.13"
+
+
+provisioner:
+  name: ansible
+  ansible_args:
+    - --diff
+  #   - -vvv
+  config_options:
+    defaults:
+      deprecation_warnings: True
+      stdout_callback: yaml
+      callbacks_enabled: profile_tasks
+
+scenario:
+  test_sequence:
+    - lint
+    - destroy
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
+
+verifier:
+  name: testinfra
+
