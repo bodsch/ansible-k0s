@@ -1,0 +1,31 @@
+---
+
+# - block:
+#     - name: get checksum list
+#       set_fact:
+#         __k0s_checksums: "{{ lookup('url', k0s_release_download_url + '/download/v' + k0s_version + '/sha256sums.txt', wantlist=True) | list }}"
+#       run_once: true
+#
+#     - name: get checksum for {{ system_arch }} architecture
+#       set_fact:
+#         __k0s_checksum: "{{ __k0s_checksums | prometheus_checksum('linux', go_arch) }}"
+#   delegate_to: localhost
+
+# https://github.com/k0sproject/k0s/releases/download/v1.23.6%2Bk0s.1/k0s-1.23.6%2Bk0s.1-amd64
+# https://github.com/k0sproject/k0s/releases/download/{{ k0s_version }}/k0s-{{ k0s_version }}-amd64
+
+- name: download k0s binary archive
+  become: false
+  delegate_to: "{{ k0s_delegate_to }}"
+  get_url:
+    url: "{{ k0s_release_download_url }}/download/v{{ k0s_version }}/k0s-v{{ k0s_version }}-{{ system_arch }}"
+    dest: "{{ k0s_local_tmp_directory }}/k0s"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
+  run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
+
+
+...
