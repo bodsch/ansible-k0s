@@ -1,4 +1,19 @@
 ---
 
+- name: daemon-reload
+  systemd:
+    daemon_reload: true
+    force: true
+  notify: restart json_exporter
+  when:
+    - ansible_service_mgr == 'systemd'
+
+
+- name: restart k0s_controller
+  become: true
+  service:
+    name: k0scontroller
+    state: restarted
+    daemon_reload: true
 
 ...

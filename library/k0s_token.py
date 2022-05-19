@@ -10,7 +10,7 @@ import os
 from ansible.module_utils.basic import AnsibleModule
 
 
-class K0sConfig(object):
+class K0sToken(object):
     """
       Main Class
     """
@@ -25,14 +25,16 @@ class K0sConfig(object):
         self._k0s = module.get_bin_path('k0s', True)
 
         self.state = module.params.get("state")
-        self.force = module.params.get("force")
+        self.role = module.params.get("role")
+        self.expiry = module.params.get("expiry")
         self.config = module.params.get("config")
         self.arguments = module.params.get("arguments")
 
         module.log(msg="----------------------------")
         module.log(msg=" k0s          : {} ({})".format(self._k0s, type(self._k0s)))
         module.log(msg=" state        : {} ({})".format(self.state, type(self.state)))
-        module.log(msg=" force        : {} ({})".format(self.force, type(self.force)))
+        module.log(msg=" role         : {} ({})".format(self.role, type(self.role)))
+        module.log(msg=" expiry       : {} ({})".format(self.expiry, type(self.expiry)))
         module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
         module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
         module.log(msg="----------------------------")
@@ -47,55 +49,49 @@ class K0sConfig(object):
             changed=False,
         )
 
-        result = self.k0s_config()
+        result = self.k0s_token()
 
         return result
 
-    def k0s_config(self):
+    def k0s_token(self):
         """
-            k0s config --help
-            Configuration related sub-commands
+            k0s token --help
+            Manage join tokens
 
             Usage:
-              k0s config [command]
+              k0s token [command]
 
             Available Commands:
-              create      Output the default k0s configuration yaml to stdout
-              edit        Launch the editor configured in your shell to edit k0s configuration
-              status      Display dynamic configuration reconciliation status
-              validate    Validate k0s configuration
+              create      Create join token
+              invalidate  Invalidates existing join token
+              list        List join tokens
         """
         _failed = True
         _changed = False
         _cmd = None
         _msg = "initial call"
-        file_size = 0
-
-        if self.force:
-            self.module.log(msg="force mode ...")
-            os.remove(self.config)
-
-        if self.state == "create" and os.path.isfile(self.config):
-            file_size = int(os.path.getsize(self.config))
-            if file_size > 0:
-                return dict(
-                    msg=f"The configuration file {self.config} already exists.",
-                    changed=False,
-                    failed=False
-                )
 
         args = []
         args.append(self._k0s)
-        args.append("config")
+        args.append("token")
         args.append(self.state)
+        args.append("--role")
+        args.append(self.role)
 
-        if self.state == "validate":
-            args.append("--config")
-            args.append(self.config)
+        if len(self.expiry) > 0:
+            args.append("--expiry")
+            args.append(self.expiry)
+
+        if self.state == "create":
+            if self.config is not None and os.path.isfile(self.config):
+                args.append("--config")
+                args.append(self.config)
 
         if len(self.arguments) > 0:
             for arg in self.arguments:
                 args.append(arg)
+
+        self.module.log(msg=f" - args {args}")
 
         rc, out, err = self._exec(args)
 
@@ -104,22 +100,19 @@ class K0sConfig(object):
             _changed = True
 
             if self.state == "create":
-
-                self._save_config(out)
-
                 return dict(
                     rc=rc,
                     cmd=" ".join(args),
-                    msg=f"The configuration file {self.config} was successfully created.",
+                    token=out,
                     failed=_failed,
                     changed=_changed
                 )
-            elif self.state == "validate":
+            elif self.state == "list":
                 _changed = False
                 return dict(
                     rc=rc,
                     cmd=" ".join(args),
-                    msg=f"The configuration file {self.config} is valid.",
+                    msg=out.trim(),
                     failed=_failed,
                     changed=_changed
                 )
@@ -138,30 +131,6 @@ class K0sConfig(object):
             cmd=_cmd,
             msg=_msg
         )
-
-    def _remove_directory(self, directory):
-        """
-        """
-        self.module.log(msg="remove directory {}".format(directory))
-
-        for root, dirs, files in os.walk(directory, topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-
-    def _save_config(self, data):
-        """
-        """
-        data_file = open(self.config, 'w')
-        data_file.write(data)
-        data_file.close()
-
-        force_mode = "0660"
-        if isinstance(force_mode, str):
-            mode = int(force_mode, base=8)
-
-        os.chmod(self.config, mode)
 
     def _exec(self, args):
         """
@@ -182,17 +151,21 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            force=dict(
-                required=False,
-                default=False,
-                type=bool
-            ),
             state=dict(
                 default="create",
-                choices=["create", "edit", "status", "validate"]
+                choices=["create", "invalidate", "list"]
+            ),
+            role=dict(
+                required=False,
+                default="worker",
+                choices=["controller", "worker", ""]
+            ),
+            expiry=dict(
+                required=False,
+                type=str
             ),
             config=dict(
-                required=True,
+                required=False,
                 type='str'
             ),
             arguments=dict(
@@ -204,7 +177,7 @@ def main():
         supports_check_mode=True,
     )
 
-    k = K0sConfig(module)
+    k = K0sToken(module)
     result = k.run()
 
     module.log(msg="= result: {}".format(result))

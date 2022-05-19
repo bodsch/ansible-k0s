@@ -9,24 +9,24 @@
     - configure
     - initial_configure
 
-- name: download binary
-  include_tasks: download.yml
-  when:
-    - not stat_k0s_binary.stat.exists
-  tags:
-    - download
-    - install
-
-- name: install
-  include_tasks: install.yml
-  tags:
-    - download
-    - install
-
-- name: configure k0s
-  include_tasks: configure/main.yml
-  tags:
-    - configure
+# - name: download binary
+#   include_tasks: download.yml
+#   when:
+#     - not stat_k0s_binary.stat.exists
+#   tags:
+#     - download
+#     - install
+#
+# - name: install
+#   include_tasks: install.yml
+#   tags:
+#     - download
+#     - install
+#
+# - name: configure k0s
+#   include_tasks: configure/main.yml
+#   tags:
+#     - configure
 
 - name: initial cluster configure
   include_tasks: configure/initial.yml
