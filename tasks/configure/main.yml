@@ -28,16 +28,30 @@
   # become: true
   block:
     - name: create default k0s config
-      command: k0s default-config > {{ k0s_config_dir }}/k0s.yaml
+      k0s_config:
+        state: create
+        config: "{{ k0s_config_dir }}/k0s.yaml"
       register: default_k0s_config
 
-    - name: store default k0s config
-      copy:
-        dest: "{{ k0s_config_dir }}/k0s.yaml"
-        content: "{{ default_k0s_config.stdout }}"
-        #owner: "{{ k0s_system_user }}"
-        #group: "{{ k0s_system_group }}"
-        mode: 0660
+    - name: d
+      debug:
+        msg: "{{ default_k0s_config }}"
+
+
+      # command: k0s default-config > {{ k0s_config_dir }}/k0s.yaml
+      # register: default_k0s_config
+
+    # - name: create default k0s config
+    #   command: k0s default-config > {{ k0s_config_dir }}/k0s.yaml
+    #   register: default_k0s_config
+    #
+    # - name: store default k0s config
+    #   copy:
+    #     dest: "{{ k0s_config_dir }}/k0s.yaml"
+    #     content: "{{ default_k0s_config.stdout }}"
+    #     #owner: "{{ k0s_system_user }}"
+    #     #group: "{{ k0s_system_group }}"
+    #     mode: 0660
   when:
     - not k0s_use_custom_config
 

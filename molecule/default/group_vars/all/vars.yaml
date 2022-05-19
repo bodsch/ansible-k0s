@@ -4,4 +4,7 @@ k0s_version: latest
 
 ansible_user: root
 
+k0s_extra_args:
+  - --verbose
+
 ...
