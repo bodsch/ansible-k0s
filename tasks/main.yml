@@ -1,42 +1,65 @@
 ---
 
+- name: d
+  debug:
+    msg:
+      - "{{ k02s_nodes }}"
+  run_once: true
 
 - name: prepare
   include_tasks: prepare.yml
   tags:
+    - prepare
     - download
     - install
     - configure
-    - initial_configure
 
-# - name: download binary
-#   include_tasks: download.yml
-#   when:
-#     - not stat_k0s_binary.stat.exists
-#   tags:
-#     - download
-#     - install
-#
-# - name: install
-#   include_tasks: install.yml
-#   tags:
-#     - download
-#     - install
-#
-# - name: configure k0s
-#   include_tasks: configure/main.yml
-#   tags:
-#     - configure
+- name: download binary
+  include_tasks: download.yml
+  when:
+    - not stat_k0s_binary.stat.exists
+  tags:
+    - download
+    - install
+
+- name: install
+  include_tasks: install.yml
+  tags:
+    - download
+    - install
+
+- name: configure k0s
+  include_tasks: configure/main.yml
+  tags:
+    - configure
 
 - name: initial cluster configure
   include_tasks: configure/initial.yml
+  when:
+    - ansible_default_ipv4.address == k02s_nodes.initial_controller
   tags:
     - initial_configure
 
-# - name: configure
-#   include_tasks: configure.yml
-#
-# - name: service
-#   include_tasks: service.yml
+- name: controller configure
+  include_tasks: configure/controller.yml
+  when:
+    - ansible_default_ipv4.address in k02s_nodes.controller
+  tags:
+    - controller
+
+- name: worker configure
+  include_tasks: configure/worker.yml
+  when:
+    - ansible_default_ipv4.address in k02s_nodes.worker
+  tags:
+    - worker
+
+- name: service
+  include_tasks: service.yml
+
+- name: finalize
+  include_tasks: finalize.yml
+  when:
+    - ansible_default_ipv4.address == k02s_nodes.initial_controller
 
 ...

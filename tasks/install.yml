@@ -41,14 +41,5 @@
     state: link
     force: true
     follow: false
-#   notify:
-#     - restart k0s
 
-# - name: create systemd service unit
-#   template:
-#     src: "init/systemd/k0s.service.j2"
-#     dest: "{{ systemd_lib_directory }}/k0s.service"
-#     owner: root
-#     group: root
-#     mode: 0644
-#   notify:
+...

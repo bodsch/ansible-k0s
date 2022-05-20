@@ -1,5 +1,11 @@
 ---
 
+- name: configure nodes
+  debug:
+    msg:
+      - "{{ k02s_nodes }}"
+  run_once: true
+
 - name: create k0s directories
   become: true
   file:

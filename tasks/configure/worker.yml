@@ -1,0 +1,37 @@
+---
+
+- name: configure nodes
+  debug:
+    msg:
+      - "{{ k02s_nodes.worker | join(', ') }}"
+  run_once: true
+
+- name: define worker join token
+  include_tasks: configure/worker_token.yml
+
+- name: Write the k0s token file on worker
+  template:
+    src: k0s/worker-token.j2
+    dest: "{{ k0s_config_dir }}/worker-token"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0600
+
+- name: create k0s worker service with install command
+  k0s_install:
+    state: worker
+    token_file: "{{ k0s_config_dir }}/worker-token"
+    arguments: "{{ k0s_extra_args | default([]) }}"
+  notify:
+    - daemon-reload
+    - restart k0s_worker
+  register: install_worker_cmd
+
+- name: enable and check k0s service
+  become: true
+  systemd:
+    name: k0sworker
+    state: restarted
+    enabled: true
+
+...

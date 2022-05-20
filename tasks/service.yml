@@ -1,0 +1,21 @@
+---
+
+- name: ensure k0s controller are enabled on boot
+  become: true
+  service:
+    name: k0scontroller
+    enabled: true
+    state: started
+  when:
+    - not ansible_default_ipv4.address in k02s_nodes.worker
+
+- name: ensure k0s worker are enabled on boot
+  become: true
+  service:
+    name: k0sworker
+    enabled: true
+    state: started
+  when:
+    - ansible_default_ipv4.address in k02s_nodes.worker
+
+...

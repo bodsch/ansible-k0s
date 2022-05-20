@@ -1,0 +1,66 @@
+---
+
+- name: configure nodes
+  debug:
+    msg:
+      - "{{ k02s_nodes.controller | join(', ') }}"
+  run_once: true
+
+- name: define controller join token
+  include_tasks: configure/controller_token.yml
+
+- name: write the k0s token file on controller
+  template:
+    src: k0s/controller-token.j2
+    dest: "{{ k0s_config_dir }}/controller-token"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0600
+
+- name: create k0s controller service with install command
+  k0s_install:
+    state: controller
+    config: "{{ k0s_config_dir }}/k0s.yaml"
+    token_file: "{{ k0s_config_dir }}/controller-token"
+    arguments: "{{ k0s_extra_args | default([]) }}"
+  notify:
+    - daemon-reload
+    - restart k0s_controller
+  register: install_controller_cmd
+
+- name: arm specific systemd drop-in
+  block:
+    - name: create k0scontroller service drop-in directory
+      file:
+        path: /etc/systemd/system/k0scontroller.service.d
+        state: directory
+        mode: 0750
+
+    - name: create overwrite.conf
+      template:
+        src: init/systemd/overwrite.conf.j2
+        dest: /etc/systemd/system/k0scontroller.service.d/overwrite.conf
+
+  when:
+    - (ansible_facts.architecture is search("arm") and
+       ansible_facts.userspace_bits == "64" ) or
+      ansible_facts.architecture is search("aarch64")
+
+- name: flush handlers
+  meta: flush_handlers
+
+- name: enable and check k0s service
+  become: true
+  service:
+    name: k0scontroller
+    state: restarted
+    enabled: true
+
+- name: wait for k8s apiserver
+  wait_for:
+    host: localhost
+    port: 6443
+    delay: 15
+    timeout: 180
+
+...

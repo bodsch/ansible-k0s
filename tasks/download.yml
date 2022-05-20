@@ -8,11 +8,8 @@
 #
 #     - name: get checksum for {{ system_arch }} architecture
 #       set_fact:
-#         __k0s_checksum: "{{ __k0s_checksums | prometheus_checksum('linux', go_arch) }}"
+#         __k0s_checksum: "{{ __k0s_checksums | k8s_checksum('linux', system_arch) }}"
 #   delegate_to: localhost
-
-# https://github.com/k0sproject/k0s/releases/download/v1.23.6%2Bk0s.1/k0s-1.23.6%2Bk0s.1-amd64
-# https://github.com/k0sproject/k0s/releases/download/{{ k0s_version }}/k0s-{{ k0s_version }}-amd64
 
 - name: "download k0s binary {{ 'to ansible controller' if k0s_direct_download else '' }}"
   become: false
@@ -26,6 +23,5 @@
   delay: 2
   check_mode: false
   run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
-
 
 ...

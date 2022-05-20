@@ -97,6 +97,8 @@ class K0sConfig(object):
             for arg in self.arguments:
                 args.append(arg)
 
+        self.module.log(msg=f" - args {args}")
+
         rc, out, err = self._exec(args)
 
         if rc == 0:

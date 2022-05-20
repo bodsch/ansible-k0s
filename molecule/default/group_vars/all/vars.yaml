@@ -1,6 +1,11 @@
 ---
 
-k0s_version: latest
+# k0s_version: latest
+
+k02s_nodes:
+  initial_controller: "{{ groups['initial_controller'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list | first }}"
+  controller: "{{ groups['controller'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
+  worker: "{{ groups['worker'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
 
 ansible_user: root
 

@@ -1,0 +1,23 @@
+---
+
+- name: create controller join token
+  delegate_to: "{{ groups['initial_controller'] | first }}"
+  k0s_token:
+    state: create
+    role: controller
+    expiry: 10m
+  register: controller_join_token
+  run_once: true
+
+- name: store controller join token
+  set_fact:
+    join_token_controller: "{{ controller_join_token.token }}"
+    cacheable: true
+  when:
+    - controller_join_token is defined
+    - controller_join_token.token is defined
+
+- name: reload facts
+  setup:
+
+...

@@ -27,16 +27,18 @@ class K0sInstall(object):
         self.state = module.params.get("state")
         self.force = module.params.get("force")
         self.config = module.params.get("config")
+        self.token_file = module.params.get("token_file")
         self.arguments = module.params.get("arguments")
 
         self._controller_systemd_unit_file = "/etc/systemd/system/k0scontroller.service"
-        self._worker_systemd_unit_file = "/etc/systemd/system/k0s.service"
+        self._worker_systemd_unit_file = "/etc/systemd/system/k0sworker.service"
 
         module.log(msg="----------------------------")
         module.log(msg=" k0s          : {} ({})".format(self._k0s, type(self._k0s)))
         module.log(msg=" state        : {} ({})".format(self.state, type(self.state)))
         module.log(msg=" force        : {} ({})".format(self.force, type(self.force)))
         module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
+        module.log(msg=" token_file   : {} ({})".format(self.token_file, type(self.token_file)))
         module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
         module.log(msg="----------------------------")
 
@@ -69,33 +71,41 @@ class K0sInstall(object):
             if self.state == "worker":
                 os.remove(self._worker_systemd_unit_file)
 
-        if not os.path.isfile(self.config):
-            return dict(
-                msg=f"config file {self.config} not exists",
-                changed=False,
-                failed=True
-            )
+        if self.state == "controller":
+            if not os.path.isfile(self.config):
+                return dict(
+                    msg=f"config file {self.config} not exists",
+                    changed=False,
+                    failed=True
+                )
 
-        if self.state == "controller" and os.path.isfile(self._controller_systemd_unit_file):
-            return dict(
-                msg=f"systemd unit file {self._controller_systemd_unit_file} already created.",
-                changed=False,
-                failed=False
-            )
+            if os.path.isfile(self._controller_systemd_unit_file):
+                return dict(
+                    msg=f"systemd unit file {self._controller_systemd_unit_file} already created.",
+                    changed=False,
+                    failed=False
+                )
 
-        if self.state == "worker" and os.path.isfile(self._worker_systemd_unit_file):
-            return dict(
-                msg=f"systemd unit file {self._worker_systemd_unit_file} already created.",
-                changed=False,
-                failed=False
-            )
+        if self.state == "worker":
+            if os.path.isfile(self._worker_systemd_unit_file):
+                return dict(
+                    msg=f"systemd unit file {self._worker_systemd_unit_file} already created.",
+                    changed=False,
+                    failed=False
+                )
 
         args = []
         args.append(self._k0s)
         args.append("install")
         args.append(self.state)
-        args.append("--config")
-        args.append(self.config)
+
+        if self.config is not None and os.path.isfile(self.config):
+            args.append("--config")
+            args.append(self.config)
+
+        if self.token_file is not None and os.path.isfile(self.token_file):
+            args.append("--token-file")
+            args.append(self.token_file)
 
         if len(self.arguments) > 0:
             for arg in self.arguments:
@@ -106,9 +116,17 @@ class K0sInstall(object):
         rc, out, err = self._exec(args)
 
         if rc == 0:
+            if self.state == "controller":
+                if self._verify_unit_file(self._controller_systemd_unit_file):
+                    _msg=f"systemd unit file {self._controller_systemd_unit_file} successful created.",
+
+            if self.state == "worker":
+                if self._verify_unit_file(self._worker_systemd_unit_file):
+                    _msg=f"systemd unit file {self._worker_systemd_unit_file} successful created.",
+
             _failed = False
             _changed = True
-            _msg = out
+            _msg = _msg
         else:
             return dict(
                 rc=rc,
@@ -123,6 +141,17 @@ class K0sInstall(object):
             cmd=_cmd,
             msg=_msg
         )
+
+    def _verify_unit_file(self, unit_file):
+        """
+        """
+        if os.path.isfile(self._controller_systemd_unit_file):
+            file_size = int(os.path.getsize(self.config))
+            if file_size > 0:
+                return True
+
+        return False
+
 
     def _remove_directory(self, directory):
         """
@@ -139,9 +168,9 @@ class K0sInstall(object):
         """
         """
         rc, out, err = self.module.run_command(args, check_rc=False)
-        # self.module.log(msg="  rc : '{}'".format(rc))
-        # self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
-        # self.module.log(msg="  err: '{}'".format(err))
+        self.module.log(msg="  rc : '{}'".format(rc))
+        self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
+        self.module.log(msg="  err: '{}'".format(err))
         return rc, out, err
 
 
@@ -164,7 +193,11 @@ def main():
                 choices=["controller", "worker"]
             ),
             config=dict(
-                required=True,
+                required=False,
+                type='str'
+            ),
+            token_file=dict(
+                required=False,
                 type='str'
             ),
             arguments=dict(

@@ -1,0 +1,23 @@
+---
+
+- name: create worker join token
+  delegate_to: "{{ groups['initial_controller'] | first }}"
+  k0s_token:
+    state: create
+    role: worker
+    expiry: 10m
+  register: worker_join_token
+  run_once: true
+
+- name: store worker join token
+  set_fact:
+    join_token_worker: "{{ worker_join_token.token }}"
+    cacheable: true
+  when:
+    - worker_join_token is defined
+    - worker_join_token.token is defined
+
+- name: reload facts
+  setup:
+
+...
