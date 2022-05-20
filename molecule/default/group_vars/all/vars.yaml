@@ -9,7 +9,7 @@ k02s_nodes:
 
 ansible_user: root
 
-k0s_extra_args:
-  - --verbose
+# k0s_extra_args:
+#   - --verbose
 
 ...

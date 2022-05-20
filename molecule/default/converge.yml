@@ -8,7 +8,7 @@
   roles:
     - role: ansible-k0s
       tags:
-        - initial_configure
+        - k0s_initial_configure
 
 - name: controller
   hosts: k0s-2
@@ -18,7 +18,7 @@
   roles:
     - role: ansible-k0s
       tags:
-        - controller
+        - k0s_controller
 
 - name: worker
   hosts: k0s-3,k0s-4
@@ -28,4 +28,4 @@
   roles:
     - role: ansible-k0s
       tags:
-        - worker
+        - k0s_worker
