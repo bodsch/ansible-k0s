@@ -30,7 +30,7 @@ One role for all cases.
 Soon also available via ansible-galaxy
 
 
-TASK TAGS: [configure, controller, download, initial_configure, install]
+TASK TAGS: [k0s_configure, k0s_controller, k0s_download, k0s_initial_configure, k0s_install, k0s_prepare, k0s_service, k0s_worker]
 
 
 

@@ -24,6 +24,7 @@ platforms:
       - /run
       - /tmp
     groups:
+      - k0s
       - initial_controller
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -54,6 +55,7 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
+      - k0s
       - controller
     networks:
       - name: k8s
@@ -73,6 +75,7 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
+      - k0s
       - worker
     networks:
       - name: k8s
