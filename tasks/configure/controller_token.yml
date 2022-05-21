@@ -1,11 +1,12 @@
 ---
 
 - name: create controller join token
-  delegate_to: "{{ k0s_nodes.initial_controller }}"
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
   k0s_token:
     state: create
     role: controller
-    expiry: 10m
+    expiry: 1h
+    data_dir: "{{ k0s_data_dir }}"
   register: controller_join_token
   run_once: true
 

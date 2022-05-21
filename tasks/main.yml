@@ -1,15 +1,5 @@
 ---
 
-- name: d
-  debug:
-    msg:
-      - "{{ k0s_nodes }}"
-      - ""
-      - "{{ k0s_initial_controller }}"
-      - "{{ k0s_controllers | join(', ')  }}"
-      - "{{ k0s_workers | join(', ') }}"
-  run_once: true
-
 - name: prepare
   include_tasks: prepare.yml
   tags:
@@ -37,26 +27,28 @@
   tags:
     - k0s_configure
 
-- name: initial cluster configure
+- name: configure initial cluster k0s controller
   include_tasks: configure/initial_controller.yml
   when:
-    - ansible_hostname == k0s_nodes.initial_controller
+    - ansible_hostname == k0s_cluster_nodes.initial_controller
   tags:
     - k0s_initial_configure
 
-- name: controller configure
+- name: configure k0s controller
   include_tasks: configure/controller.yml
   when:
-    - ansible_hostname in k0s_nodes.controllers
+    - k0s_cluster_nodes.controllers | count > 0
+    - ansible_hostname in k0s_cluster_nodes.controllers
   tags:
     - k0s_controller
 
-# - name: worker configure
-#   include_tasks: configure/worker.yml
-#   when:
-#     - ansible_hostname in k0s_nodes.workers
-#   tags:
-#     - k0s_worker
+- name: configure k0s worker
+  include_tasks: configure/worker.yml
+  when:
+    - k0s_cluster_nodes.workers | count > 0
+    - ansible_hostname in k0s_cluster_nodes.workers
+  tags:
+    - k0s_worker
 
 - name: service
   include_tasks: service.yml
@@ -66,7 +58,7 @@
 - name: finalize
   include_tasks: finalize.yml
   when:
-    - ansible_default_ipv4.address == k0s_nodes.initial_controller
+    - ansible_hostname == k0s_cluster_nodes.initial_controller
   tags:
     - k0s_initial_configure
 

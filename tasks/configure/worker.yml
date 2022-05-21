@@ -3,7 +3,7 @@
 - name: configure nodes
   debug:
     msg:
-      - "{{ k0s_nodes.workers | join(', ') }}"
+      - "{{ k0s_cluster_nodes.workers | join(', ') }}"
   run_once: true
 
 - name: define worker join token
@@ -20,6 +20,7 @@
 - name: create k0s worker service with install command
   k0s_install:
     state: worker
+    data_dir: "{{ k0s_data_dir }}"
     token_file: "{{ k0s_config_dir }}/worker-token"
     arguments: "{{ k0s_extra_args | default([]) }}"
   notify:

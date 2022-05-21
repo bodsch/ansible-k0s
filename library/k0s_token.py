@@ -28,6 +28,7 @@ class K0sToken(object):
         self.role = module.params.get("role")
         self.expiry = module.params.get("expiry")
         self.config = module.params.get("config")
+        self.data_dir = module.params.get("data_dir")
         self.arguments = module.params.get("arguments")
 
         module.log(msg="----------------------------")
@@ -36,6 +37,7 @@ class K0sToken(object):
         module.log(msg=" role         : {} ({})".format(self.role, type(self.role)))
         module.log(msg=" expiry       : {} ({})".format(self.expiry, type(self.expiry)))
         module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
+        module.log(msg=" data_dir     : {} ({})".format(self.data_dir, type(self.data_dir)))
         module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
         module.log(msg="----------------------------")
 
@@ -77,6 +79,8 @@ class K0sToken(object):
         args.append(self.state)
         args.append("--role")
         args.append(self.role)
+        args.append("--data-dir")
+        args.append(self.data_dir)
 
         if len(self.expiry) > 0:
             args.append("--expiry")
@@ -166,6 +170,11 @@ def main():
             ),
             config=dict(
                 required=False,
+                type='str'
+            ),
+            data_dir=dict(
+                required=False,
+                default="/var/lib/k0s",
                 type='str'
             ),
             arguments=dict(

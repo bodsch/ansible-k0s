@@ -25,7 +25,7 @@
     flat: true
     validate_checksum: false
 
-- name: "print kubeconfig command"
+- name: print kubeconfig command
   debug:
     msg: "To use Cluster: export KUBECONFIG={{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
 

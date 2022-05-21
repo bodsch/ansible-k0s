@@ -11,7 +11,7 @@
 #         __k0s_checksum: "{{ __k0s_checksums | k8s_checksum('linux', system_arch) }}"
 #   delegate_to: localhost
 
-- name: "download k0s binary {{ 'to ansible controller' if k0s_direct_download else '' }}"
+- name: download k0s binary {{ 'to ansible controller' if not k0s_direct_download else '' }}
   become: false
   delegate_to: "{{ k0s_delegate_to }}"
   get_url:

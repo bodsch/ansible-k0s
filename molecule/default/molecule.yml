@@ -12,7 +12,7 @@ lint: |
   flake8 .
 
 platforms:
-  - name: k0s-1
+  - name: k0s-controller
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
@@ -28,9 +28,7 @@ platforms:
       - k0s_initial_controller
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      #- /lib/modules:/lib/modules:ro
-      # needs only by ubuntu 20.04
-      #- /var/lib/docker/overlay2:/var/lib/docker/overlay2:rw
+      - /run/k0s-controller:/opt:rw
     network_mode: default
     docker_networks:
       - name: k8s
@@ -41,27 +39,27 @@ platforms:
       - name: k8s
         ipv4_address: "10.20.0.10"
 
-  - name: k0s-2
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-    privileged: true
-    pre_build_image: true
-    capabilities:
-      - SYS_ADMIN
-    tmpfs:
-      - /run
-      - /tmp
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    groups:
-      - k0s
-      - k0s_controllers
-    networks:
-      - name: k8s
-        ipv4_address: "10.20.0.11"
+  # - name: k0s-2
+  #   image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+  #   command: ${MOLECULE_DOCKER_COMMAND:-""}
+  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+  #   privileged: true
+  #   pre_build_image: true
+  #   capabilities:
+  #     - SYS_ADMIN
+  #   tmpfs:
+  #     - /run
+  #     - /tmp
+  #   volumes:
+  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  #   groups:
+  #     - k0s
+  #     - k0s_controllers
+  #   networks:
+  #     - name: k8s
+  #       ipv4_address: "10.20.0.11"
 
-  - name: k0s-3
+  - name: k0s-worker-1
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
@@ -74,14 +72,16 @@ platforms:
       - /tmp
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /lib/modules:/lib/modules:ro
+      - /run/k0s-worker-1:/opt:rw
     groups:
       - k0s
       - k0s_workers
     networks:
       - name: k8s
-        ipv4_address: "10.20.0.12"
+        ipv4_address: "10.20.0.21"
 
-  - name: k0s-4
+  - name: k0s-worker-2
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
@@ -94,12 +94,14 @@ platforms:
       - /tmp
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /lib/modules:/lib/modules:ro
+      - /run/k0s-worker-2:/opt:rw
     groups:
       - k0s
       - k0s_workers
     networks:
       - name: k8s
-        ipv4_address: "10.20.0.13"
+        ipv4_address: "10.20.0.22"
 
 
 provisioner:

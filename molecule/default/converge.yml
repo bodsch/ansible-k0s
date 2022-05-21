@@ -13,7 +13,7 @@
         - k0s_configure
 
 - name: initial controller
-  hosts: k0s-1
+  hosts: k0s-controller
   any_errors_fatal: true
   gather_facts: true
 
@@ -22,22 +22,22 @@
       tags:
         - k0s_initial_configure
 
-- name: controller
-  hosts: k0s-2
-  any_errors_fatal: true
-  gather_facts: true
-
-  roles:
-    - role: ansible-k0s
-      tags:
-        - k0s_controller
-
-# - name: worker
-#   hosts: k0s-3,k0s-4
+# - name: controller
+#   hosts: k0s-2
 #   any_errors_fatal: true
 #   gather_facts: true
 #
 #   roles:
 #     - role: ansible-k0s
 #       tags:
-#         - k0s_worker
+#         - k0s_controller
+
+- name: worker
+  hosts: k0s_workers
+  any_errors_fatal: true
+  gather_facts: true
+
+  roles:
+    - role: ansible-k0s
+      tags:
+        - k0s_worker

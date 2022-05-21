@@ -6,7 +6,7 @@ k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 k0s_system_user: "{{ ansible_user }}"
 k0s_system_group: "{{ ansible_user }}"
 
-k0s_nodes:
+k0s_cluster_nodes:
   initial_controller: ""
   controllers: []
   workers: []

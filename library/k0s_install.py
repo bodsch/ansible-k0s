@@ -27,6 +27,7 @@ class K0sInstall(object):
         self.state = module.params.get("state")
         self.force = module.params.get("force")
         self.config = module.params.get("config")
+        self.data_dir = module.params.get("data_dir")
         self.token_file = module.params.get("token_file")
         self.arguments = module.params.get("arguments")
 
@@ -38,6 +39,7 @@ class K0sInstall(object):
         module.log(msg=" state        : {} ({})".format(self.state, type(self.state)))
         module.log(msg=" force        : {} ({})".format(self.force, type(self.force)))
         module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
+        module.log(msg=" data_dir     : {} ({})".format(self.data_dir, type(self.data_dir)))
         module.log(msg=" token_file   : {} ({})".format(self.token_file, type(self.token_file)))
         module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
         module.log(msg="----------------------------")
@@ -98,6 +100,8 @@ class K0sInstall(object):
         args.append(self._k0s)
         args.append("install")
         args.append(self.state)
+        args.append("--data-dir")
+        args.append(self.data_dir)
 
         if self.config is not None and os.path.isfile(self.config):
             args.append("--config")
@@ -197,6 +201,11 @@ def main():
             ),
             token_file=dict(
                 required=False,
+                type='str'
+            ),
+            data_dir=dict(
+                required=False,
+                default="/var/lib/k0s",
                 type='str'
             ),
             arguments=dict(

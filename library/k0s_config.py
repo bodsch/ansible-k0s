@@ -27,6 +27,7 @@ class K0sConfig(object):
         self.state = module.params.get("state")
         self.force = module.params.get("force")
         self.config = module.params.get("config")
+        self.data_dir = module.params.get("data_dir")
         self.arguments = module.params.get("arguments")
 
         module.log(msg="----------------------------")
@@ -34,6 +35,7 @@ class K0sConfig(object):
         module.log(msg=" state        : {} ({})".format(self.state, type(self.state)))
         module.log(msg=" force        : {} ({})".format(self.force, type(self.force)))
         module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
+        module.log(msg=" data_dir     : {} ({})".format(self.data_dir, type(self.data_dir)))
         module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
         module.log(msg="----------------------------")
 
@@ -88,6 +90,8 @@ class K0sConfig(object):
         args.append(self._k0s)
         args.append("config")
         args.append(self.state)
+        args.append("--data-dir")
+        args.append(self.data_dir)
 
         if self.state == "validate":
             args.append("--config")
@@ -195,6 +199,11 @@ def main():
             ),
             config=dict(
                 required=True,
+                type='str'
+            ),
+            data_dir=dict(
+                required=False,
+                default="/var/lib/k0s",
                 type='str'
             ),
             arguments=dict(

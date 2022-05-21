@@ -7,7 +7,7 @@
     enabled: true
     state: started
   when:
-    - not ansible_default_ipv4.address in k0s_nodes.workers
+    - not ansible_hostname in k0s_cluster_nodes.workers
 
 - name: ensure k0s worker are enabled on boot
   become: true
@@ -16,6 +16,6 @@
     enabled: true
     state: started
   when:
-    - ansible_default_ipv4.address in k0s_nodes.workers
+    - ansible_hostname in k0s_cluster_nodes.workers
 
 ...

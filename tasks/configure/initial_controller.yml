@@ -3,13 +3,14 @@
 - name: configure nodes
   debug:
     msg:
-      - "{{ k0s_nodes.initial_controller }}"
+      - "{{ k0s_cluster_nodes.initial_controller }}"
   run_once: true
 
 - name: create k0s initial controller service with install command
   k0s_install:
     state: controller
     config: "{{ k0s_config_dir }}/k0s.yaml"
+    data_dir: "{{ k0s_data_dir }}"
     arguments: "{{ k0s_extra_args | default([]) }}"
   notify:
     - daemon-reload
@@ -28,6 +29,9 @@
       template:
         src: init/systemd/overwrite.conf.j2
         dest: /etc/systemd/system/k0scontroller.service.d/overwrite.conf
+      notify:
+        - daemon-reload
+        - restart k0s_controller
 
   when:
     - (ansible_facts.architecture is search("arm") and

@@ -3,7 +3,7 @@
 - name: configure nodes
   debug:
     msg:
-      - "{{ k0s_nodes }}"
+      - "{{ k0s_cluster_nodes }}"
   run_once: true
 
 - name: create k0s directories
@@ -12,30 +12,31 @@
     path: "{{ item }}"
     state: directory
     mode: 0775
-    #owner: "{{ k0s_system_user }}"
-    #group: "{{ k0s_system_group }}"
   loop:
     - "{{ k0s_config_dir }}"
     - "{{ k0s_data_dir }}"
     - "{{ k0s_libexec_dir }}"
 
-- name: write the custom k0s config file
-  become: true
-  template:
-    src: k0s/k0s.yml.j2
-    dest: "{{ k0s_config_dir }}/k0s.yaml"
-    #owner: "{{ k0s_system_user }}"
-    #group: "{{ k0s_system_group }}"
-    mode: 0660
-  when:
-    - k0s_use_custom_config
+- name: handle k0s config file
+  block:
+    - name: create default k0s config
+      k0s_config:
+        state: create
+        data_dir: "{{ k0s_data_dir }}"
+        config: "{{ k0s_config_dir }}/k0s.yaml"
+      register: default_k0s_config
+      when:
+        - not k0s_use_custom_config
 
-- name: create default k0s config
-  k0s_config:
-    state: create
-    config: "{{ k0s_config_dir }}/k0s.yaml"
-  register: default_k0s_config
-  when:
-    - not k0s_use_custom_config
+    - name: write the custom k0s config file
+      become: true
+      template:
+        src: k0s/k0s.yml.j2
+        dest: "{{ k0s_config_dir }}/k0s.yaml"
+        mode: 0660
+      when:
+        - k0s_use_custom_config
 
+  when:
+    - ansible_hostname == k0s_cluster_nodes.initial_controller
 ...
