@@ -3,7 +3,7 @@
 - name: configure nodes
   debug:
     msg:
-      - "{{ k02s_nodes.worker | join(', ') }}"
+      - "{{ k0s_nodes.workers | join(', ') }}"
   run_once: true
 
 - name: define worker join token

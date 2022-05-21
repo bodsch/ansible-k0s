@@ -3,7 +3,7 @@
 - name: configure nodes
   debug:
     msg:
-      - "{{ k02s_nodes.controller | join(', ') }}"
+      - "{{ k0s_nodes.controllers | join(', ') }}"
   run_once: true
 
 - name: define controller join token

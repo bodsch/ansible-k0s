@@ -1,7 +1,7 @@
 ---
 
 - name: create worker join token
-  delegate_to: "{{ groups['initial_controller'] | first }}"
+  delegate_to: "{{ k0s_nodes.initial_controller }}"
   k0s_token:
     state: create
     role: worker

@@ -6,10 +6,10 @@ k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 k0s_system_user: "{{ ansible_user }}"
 k0s_system_group: "{{ ansible_user }}"
 
-k02s_nodes:
+k0s_nodes:
   initial_controller: ""
-  controller: []
-  worker: []
+  controllers: []
+  workers: []
 
 k0s_config_dir: /etc/k0s
 k0s_data_dir: /var/lib/k0s

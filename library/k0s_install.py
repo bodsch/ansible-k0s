@@ -118,11 +118,11 @@ class K0sInstall(object):
         if rc == 0:
             if self.state == "controller":
                 if self._verify_unit_file(self._controller_systemd_unit_file):
-                    _msg=f"systemd unit file {self._controller_systemd_unit_file} successful created.",
+                    _msg = f"systemd unit file {self._controller_systemd_unit_file} successful created.",
 
             if self.state == "worker":
                 if self._verify_unit_file(self._worker_systemd_unit_file):
-                    _msg=f"systemd unit file {self._worker_systemd_unit_file} successful created.",
+                    _msg = f"systemd unit file {self._worker_systemd_unit_file} successful created.",
 
             _failed = False
             _changed = True
@@ -151,7 +151,6 @@ class K0sInstall(object):
                 return True
 
         return False
-
 
     def _remove_directory(self, directory):
         """

@@ -3,7 +3,11 @@
 - name: d
   debug:
     msg:
-      - "{{ k02s_nodes }}"
+      - "{{ k0s_nodes }}"
+      - ""
+      - "{{ k0s_initial_controller }}"
+      - "{{ k0s_controllers | join(', ')  }}"
+      - "{{ k0s_workers | join(', ') }}"
   run_once: true
 
 - name: prepare
@@ -36,23 +40,23 @@
 - name: initial cluster configure
   include_tasks: configure/initial_controller.yml
   when:
-    - ansible_default_ipv4.address == k02s_nodes.initial_controller
+    - ansible_hostname == k0s_nodes.initial_controller
   tags:
     - k0s_initial_configure
 
 - name: controller configure
   include_tasks: configure/controller.yml
   when:
-    - ansible_default_ipv4.address in k02s_nodes.controller
+    - ansible_hostname in k0s_nodes.controllers
   tags:
     - k0s_controller
 
-- name: worker configure
-  include_tasks: configure/worker.yml
-  when:
-    - ansible_default_ipv4.address in k02s_nodes.worker
-  tags:
-    - k0s_worker
+# - name: worker configure
+#   include_tasks: configure/worker.yml
+#   when:
+#     - ansible_hostname in k0s_nodes.workers
+#   tags:
+#     - k0s_worker
 
 - name: service
   include_tasks: service.yml
@@ -62,7 +66,7 @@
 - name: finalize
   include_tasks: finalize.yml
   when:
-    - ansible_default_ipv4.address == k02s_nodes.initial_controller
+    - ansible_default_ipv4.address == k0s_nodes.initial_controller
   tags:
     - k0s_initial_configure
 

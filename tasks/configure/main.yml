@@ -3,7 +3,7 @@
 - name: configure nodes
   debug:
     msg:
-      - "{{ k02s_nodes }}"
+      - "{{ k0s_nodes }}"
   run_once: true
 
 - name: create k0s directories

@@ -3,7 +3,7 @@
 - name: configure nodes
   debug:
     msg:
-      - "{{ k02s_nodes.initial_controller }}"
+      - "{{ k0s_nodes.initial_controller }}"
   run_once: true
 
 - name: create k0s initial controller service with install command
