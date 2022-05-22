@@ -42,6 +42,32 @@ Tested on
 * Debian based
     - Debian 10 / 11
 
+## usage
+
+```yaml
+k0s_version: 1.23.6+k0s.1
+k0s_release_download_url: https://github.com/k0sproject/k0s/releases
+
+k0s_system_user: "{{ ansible_user }}"
+k0s_system_group: "{{ ansible_user }}"
+
+k0s_cluster_nodes:
+  initial_controller: ""
+  controllers: []
+  workers: []
+
+k0s_config_dir: /etc/k0s
+k0s_data_dir: /var/lib/k0s
+k0s_libexec_dir: /usr/libexec/k0s
+
+k0s_use_custom_config: false
+
+k0s_direct_download: false
+
+k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
+```
+
+
 ## Contribution
 
 Please read [Contribution](CONTRIBUTING.md)

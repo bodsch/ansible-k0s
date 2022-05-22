@@ -32,7 +32,7 @@
   when:
     - ansible_hostname == k0s_cluster_nodes.initial_controller
   tags:
-    - k0s_initial_configure
+    - k0s_initial_controller
 
 - name: configure k0s controller
   include_tasks: configure/controller.yml

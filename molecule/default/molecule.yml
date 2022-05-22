@@ -20,15 +20,11 @@ platforms:
     pre_build_image: true
     capabilities:
       - SYS_ADMIN
-    tmpfs:
-      - /run
-      - /tmp
     groups:
       - k0s
       - k0s_initial_controller
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - /run/k0s-controller:/opt:rw
+      - /tmp/molecule/k0s/controller:/opt
     network_mode: default
     docker_networks:
       - name: k8s
@@ -67,13 +63,8 @@ platforms:
     pre_build_image: true
     capabilities:
       - SYS_ADMIN
-    tmpfs:
-      - /run
-      - /tmp
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - /lib/modules:/lib/modules:ro
-      - /run/k0s-worker-1:/opt:rw
+      - /tmp/molecule/k0s/worker-1:/opt:rw
     groups:
       - k0s
       - k0s_workers
@@ -89,13 +80,8 @@ platforms:
     pre_build_image: true
     capabilities:
       - SYS_ADMIN
-    tmpfs:
-      - /run
-      - /tmp
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - /lib/modules:/lib/modules:ro
-      - /run/k0s-worker-2:/opt:rw
+      - /tmp/molecule/k0s/worker-2:/opt:rw
     groups:
       - k0s
       - k0s_workers

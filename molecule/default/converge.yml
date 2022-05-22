@@ -20,7 +20,7 @@
   roles:
     - role: ansible-k0s
       tags:
-        - k0s_initial_configure
+        - k0s_initial_controller
 
 # - name: controller
 #   hosts: k0s-2

@@ -14,6 +14,7 @@ k0s_cluster_nodes:
 k0s_config_dir: /etc/k0s
 k0s_data_dir: /var/lib/k0s
 k0s_libexec_dir: /usr/libexec/k0s
+
 k0s_use_custom_config: false
 
 k0s_direct_download: false
