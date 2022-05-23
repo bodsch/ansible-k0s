@@ -166,11 +166,11 @@ def test_listen(host, get_vars):
         print(i)
 
     # kube-router
-    assert host.socket("tcp://0.0.0.0:8080").is_listening
-    assert host.socket("tcp://0.0.0.0:20244").is_listening
-    assert host.socket("tcp://127.0.0.1:50051").is_listening
-    assert host.socket("tcp://{0}:179".format(eth[0])).is_listening
-    assert host.socket("tcp://{0}:50051".format(eth[0])).is_listening
+    # assert host.socket("tcp://0.0.0.0:8080").is_listening
+    # assert host.socket("tcp://0.0.0.0:20244").is_listening
+    # assert host.socket("tcp://127.0.0.1:50051").is_listening
+    # assert host.socket("tcp://{0}:179".format(eth[0])).is_listening
+    # assert host.socket("tcp://{0}:50051".format(eth[0])).is_listening
     # kubelet
     assert host.socket("tcp://127.0.0.1:10248").is_listening
     assert host.socket("tcp://0.0.0.0:10250").is_listening

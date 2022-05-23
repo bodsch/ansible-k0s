@@ -7,7 +7,7 @@ then
   TOX_ARGS="--scenario-name ${TOX_SCENARIO}"
 fi
 
-tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge -- --list-tags
+# tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge -- --list-tags
 
 # tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge -- \
 #   --tags=configure \
