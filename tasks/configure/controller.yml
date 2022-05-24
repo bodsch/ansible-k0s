@@ -1,18 +1,36 @@
 ---
 
-- name: configure nodes
+- name: configure controllers
   debug:
     msg:
       - "{{ k0s_cluster_nodes.controllers | join(', ') }}"
   run_once: true
 
-- name: define controller join token
-  include_tasks: configure/controller_token.yml
+- name: create controller join token
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  k0s_token:
+    state: create
+    role: controller
+    expiry: "{{ k0s_token_expiry }}"
+    data_dir: "{{ k0s_data_dir }}"
+  register: controller_join_token
+  run_once: true
+
+- name: store controller join token
+  set_fact:
+    join_token_controller: "{{ controller_join_token.token }}"
+    cacheable: true
+  when:
+    - controller_join_token is defined
+    - controller_join_token.token is defined
+
+- name: reload facts
+  setup:
 
 - name: write the k0s token file on controller
   template:
     src: k0s/controller-token.j2
-    dest: "{{ k0s_config_dir }}/controller-token"
+    dest: "{{ k0s_token_files.controller }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0600
@@ -20,8 +38,7 @@
 - name: create k0s controller service with install command
   k0s_install:
     state: controller
-    # config: "{{ k0s_config_dir }}/k0s.yaml"
-    token_file: "{{ k0s_config_dir }}/controller-token"
+    token_file: "{{ k0s_token_files.controller }}"
     data_dir: "{{ k0s_data_dir }}"
     arguments: "{{ k0s_extra_args | default([]) }}"
   notify:

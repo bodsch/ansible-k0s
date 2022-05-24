@@ -30,7 +30,8 @@
     - k0s_requirements is defined
     - k0s_requirements | count > 0
 
-- block:
+- name: latest release
+  block:
     - name: get latest release
       uri:
         url: "https://api.github.com/repos/k0sproject/k0s/releases/latest"

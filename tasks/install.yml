@@ -1,6 +1,6 @@
 ---
 
-- name: "detect binary file for k0s '{{ k0s_local_tmp_directory }}/k0s'"
+- name: detect binary file for k0s '{{ k0s_local_tmp_directory }}/k0s'
   become: false
   delegate_to: "{{ k0s_delegate_to }}"
   stat:
@@ -8,7 +8,8 @@
   register: stat_file_binary
   run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
 
-- block:
+- name: propagate k0s
+  block:
     - name: propagate k0s binaries
       copy:
         src: "{{ k0s_local_tmp_directory }}/k0s"

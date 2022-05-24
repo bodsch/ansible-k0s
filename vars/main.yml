@@ -12,6 +12,9 @@ k0s_local_tmp_directory: "{{
 
 k0s_requirements: []
 
+k0s_token_files:
+  controller: "{{ k0s_config_dir }}/controller.token"
+  worker: "{{ k0s_config_dir }}/worker.token"
 
 go_arch_map:
   x86_64: 'amd64'

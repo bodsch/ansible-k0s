@@ -30,9 +30,6 @@ One role for all cases.
 Soon also available via ansible-galaxy
 
 
-TASK TAGS: [k0s_configure, k0s_controller, k0s_download, k0s_initial_configure, k0s_install, k0s_prepare, k0s_service, k0s_worker]
-
-
 
 ## supported Operating systems
 
@@ -60,12 +57,25 @@ k0s_config_dir: /etc/k0s
 k0s_data_dir: /var/lib/k0s
 k0s_libexec_dir: /usr/libexec/k0s
 
+k0s_token_expiry: "1h"
+
 k0s_use_custom_config: false
 
 k0s_direct_download: false
 
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 ```
+
+### tags
+
+- `k0s_configure`
+- `k0s_controller`
+- `k0s_download`
+- `k0s_initial_configure`
+- `k0s_install`
+- `k0s_prepare`
+- `k0s_service`
+- `k0s_worker`
 
 
 ## Contribution

@@ -1,18 +1,36 @@
 ---
 
-- name: configure nodes
+- name: configure workers
   debug:
     msg:
       - "{{ k0s_cluster_nodes.workers | join(', ') }}"
   run_once: true
 
-- name: define worker join token
-  include_tasks: configure/worker_token.yml
+- name: create worker join token
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  k0s_token:
+    state: create
+    role: worker
+    expiry: "{{ k0s_token_expiry }}"
+    data_dir: "{{ k0s_data_dir }}"
+  register: worker_join_token
+  run_once: true
 
-- name: Write the k0s token file on worker
+- name: store worker join token
+  set_fact:
+    join_token_worker: "{{ worker_join_token.token }}"
+    cacheable: true
+  when:
+    - worker_join_token is defined
+    - worker_join_token.token is defined
+
+- name: reload facts
+  setup:
+
+- name: write the k0s token file on worker
   template:
     src: k0s/worker-token.j2
-    dest: "{{ k0s_config_dir }}/worker-token"
+    dest: "{{ k0s_token_files.worker }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0600
@@ -21,7 +39,7 @@
   k0s_install:
     state: worker
     data_dir: "{{ k0s_data_dir }}"
-    token_file: "{{ k0s_config_dir }}/worker-token"
+    token_file: "{{ k0s_token_files.worker }}"
     arguments: "{{ k0s_extra_args | default([]) }}"
   notify:
     - daemon-reload
