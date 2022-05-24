@@ -1,0 +1,27 @@
+---
+
+galaxy_info:
+  role_name: k0s
+  namespace: bodsch
+
+  author: Bodo Schulz
+  description: |
+    Install and configure a kubernetes cluster using ansible and the vanilla upstream Kubernetes distro k0s.
+
+  license: Apache
+  min_ansible_version: 2.12
+
+  platforms:
+    - name: ArchLinux
+    - name: Debian
+      versions:
+        # 11
+        - bullseye
+  galaxy_tags:
+    - development
+    - kubernetes
+    - cluster
+
+dependencies: []
+
+...
