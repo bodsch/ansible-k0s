@@ -1,4 +1,4 @@
-ansible-lint==6.2.0
+ansible-lint
 molecule==3.6.1
 molecule-docker==1.1.0
 docker==5.0.0
