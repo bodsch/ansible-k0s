@@ -4,6 +4,8 @@
   debug:
     msg:
       - "{{ k0s_cluster_nodes }}"
+      - "{{ ansible_hostname }}"
+      - "{{ ansible_fqdn }}"
   run_once: true
 
 - name: create k0s directories
@@ -22,6 +24,7 @@
     - name: create default k0s config
       k0s_config:
         state: create
+        force: "{{ k0s_force }}"
         data_dir: "{{ k0s_data_dir }}"
         config: "{{ k0s_config_dir }}/k0s.yaml"
       register: default_k0s_config
@@ -38,5 +41,6 @@
         - k0s_use_custom_config
 
   when:
-    - ansible_hostname == k0s_cluster_nodes.initial_controller
+    - ansible_hostname == k0s_cluster_nodes.initial_controller or
+      ansible_fqdn == k0s_cluster_nodes.initial_controller
 ...

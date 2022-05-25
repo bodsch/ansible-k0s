@@ -17,6 +17,8 @@ k0s_libexec_dir: /usr/libexec/k0s
 
 k0s_token_expiry: "1h"
 
+k0s_force: false
+
 k0s_use_custom_config: false
 
 k0s_direct_download: false

@@ -8,6 +8,14 @@
     - k0s_install
     - k0s_configure
 
+- name: reset k0s
+  include_tasks: reset.yml
+  when:
+    - k0s_force is defined
+    - k0s_force
+  tags:
+    - k0s_prepare
+
 - name: download binary
   include_tasks: download.yml
   when:
@@ -30,7 +38,8 @@
 - name: configure initial cluster k0s controller
   include_tasks: configure/initial_controller.yml
   when:
-    - ansible_hostname == k0s_cluster_nodes.initial_controller
+    - ansible_hostname == k0s_cluster_nodes.initial_controller or
+      ansible_fqdn == k0s_cluster_nodes.initial_controller
   tags:
     - k0s_initial_controller
 
@@ -38,7 +47,8 @@
   include_tasks: configure/controller.yml
   when:
     - k0s_cluster_nodes.controllers | count > 0
-    - ansible_hostname in k0s_cluster_nodes.controllers
+    - ansible_hostname in k0s_cluster_nodes.controllers or
+      ansible_fqdn in k0s_cluster_nodes.controllers
   tags:
     - k0s_controller
 
@@ -46,7 +56,8 @@
   include_tasks: configure/worker.yml
   when:
     - k0s_cluster_nodes.workers | count > 0
-    - ansible_hostname in k0s_cluster_nodes.workers
+    - ansible_hostname in k0s_cluster_nodes.workers or
+      ansible_fqdn in k0s_cluster_nodes.workers
   tags:
     - k0s_worker
 
@@ -58,8 +69,9 @@
 - name: finalize
   include_tasks: finalize.yml
   when:
-    - ansible_hostname == k0s_cluster_nodes.initial_controller
+    - ansible_hostname == k0s_cluster_nodes.initial_controller or
+      ansible_fqdn == k0s_cluster_nodes.initial_controller
   tags:
-    - k0s_initial_configure
+    - k0s_finalize
 
 ...

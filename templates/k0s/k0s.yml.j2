@@ -1,33 +1,65 @@
+---
 apiVersion: k0s.k0sproject.io/v1beta1
-kind: Cluster
+kind: ClusterConfig
+
 metadata:
+  creationTimestamp: null
   name: k0s
+
 spec:
   api:
-    address: {{ ansible_host }}
-    port: 6443
+    address: {{ ansible_default_ipv4.address }}
     k0sApiPort: 9443
+    port: 6443
     sans:
     - {{ ansible_host }}
-  storage:
-    type: etcd
-    etcd:
-      peerAddress: {{ ansible_host }}
-  network:
-    podCIDR: 10.244.0.0/16
-    serviceCIDR: 10.96.0.0/12
-    provider: kuberouter
-    calico: null
+    tunneledNetworkingMode: false
+  controllerManager: {}
+  extensions:
+    helm:
+      charts: null
+      repositories: null
+    storage:
+      create_default_storage_class: false
+      type: external_storage
+  images:
+    default_pull_policy: IfNotPresent
+
+    calico:
+      cni:
+        image: docker.io/calico/cni
+        version: v3.21.2
+      kubecontrollers:
+        image: docker.io/calico/kube-controllers
+        version: v3.21.2
+      node:
+        image: docker.io/calico/node
+        version: v3.21.2
+
+    coredns:
+      image: k8s.gcr.io/coredns/coredns
+      version: v1.7.0
+
+    konnectivity:
+      image: quay.io/k0sproject/apiserver-network-proxy-agent
+      version: 0.0.30-k0s
+
+    kubeproxy:
+      image: k8s.gcr.io/kube-proxy
+      version: v1.23.6
+
     kuberouter:
-      mtu: 0
-      peerRouterIPs: ""
-      peerRouterASNs: ""
-      autoMTU: true
-  podSecurityPolicy:
-    defaultPolicy: 00-k0s-privileged
-  telemetry:
-    interval: 10m0s
-    enabled: true
+      cni:
+        image: docker.io/cloudnativelabs/kube-router
+        version: v1.3.2
+      cniInstaller:
+        image: quay.io/k0sproject/cni-node
+        version: 0.1.0
+
+    metricsserver:
+      image: k8s.gcr.io/metrics-server/metrics-server
+      version: v0.5.2
+
   installConfig:
     users:
       etcdUser: etcd
@@ -35,37 +67,38 @@ spec:
       konnectivityUser: konnectivity-server
       kubeAPIserverUser: kube-apiserver
       kubeSchedulerUser: kube-scheduler
-  images:
-    konnectivity:
-      image: us.gcr.io/k8s-artifacts-prod/kas-network-proxy/proxy-agent
-      version: v0.0.13
-    metricsserver:
-      image: gcr.io/k8s-staging-metrics-server/metrics-server
-      version: v0.3.7
-    kubeproxy:
-      image: k8s.gcr.io/kube-proxy
-      version: v1.20.4
-    coredns:
-      image: docker.io/coredns/coredns
-      version: 1.7.0
-    calico:
-      cni:
-        image: docker.io/calico/cni
-        version: v3.16.2
-      node:
-        image: docker.io/calico/node
-        version: v3.16.2
-      kubecontrollers:
-        image: docker.io/calico/kube-controllers
-        version: v3.16.2
-    kuberouter:
-      cni:
-        image: docker.io/cloudnativelabs/kube-router
-        version: v1.1.1
-      cniInstaller:
-        image: quay.io/k0sproject/cni-node
-        version: 0.1.0
-    default_pull_policy: IfNotPresent
+
   konnectivity:
-    agentPort: 8132
     adminPort: 8133
+    agentPort: 8132
+
+  network:
+    calico: null
+    dualStack: {}
+    kubeProxy:
+      mode: iptables
+    kuberouter:
+      autoMTU: true
+      mtu: 0
+      peerRouterASNs: ""
+      peerRouterIPs: ""
+    podCIDR: 10.244.0.0/16
+    provider: kuberouter
+    serviceCIDR: 10.96.0.0/12
+
+  podSecurityPolicy:
+    defaultPolicy: 00-k0s-privileged
+
+  scheduler: {}
+
+  storage:
+    etcd:
+      externalCluster: null
+      peerAddress: {{ ansible_host }}
+    type: etcd
+
+  telemetry:
+    enabled: true
+    interval: 10m0s
+
+status: {}

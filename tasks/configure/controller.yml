@@ -38,6 +38,7 @@
 - name: create k0s controller service with install command
   k0s_install:
     state: controller
+    force: "{{ k0s_force }}"
     token_file: "{{ k0s_token_files.controller }}"
     data_dir: "{{ k0s_data_dir }}"
     arguments: "{{ k0s_extra_args | default([]) }}"

@@ -73,7 +73,7 @@ class K0sConfig(object):
         _msg = "initial call"
         file_size = 0
 
-        if self.force:
+        if self.force and os.path.isfile(self.config):
             self.module.log(msg="force mode ...")
             os.remove(self.config)
 

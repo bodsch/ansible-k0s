@@ -68,9 +68,9 @@ class K0sInstall(object):
 
         if self.force:
             self.module.log(msg="force mode ...")
-            if self.state == "controller":
+            if self.state == "controller" and os.path.isfile(self._controller_systemd_unit_file):
                 os.remove(self._controller_systemd_unit_file)
-            if self.state == "worker":
+            if self.state == "worker" and os.path.isfile(self._worker_systemd_unit_file):
                 os.remove(self._worker_systemd_unit_file)
 
         if self.state == "controller":

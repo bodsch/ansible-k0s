@@ -10,15 +10,15 @@
     mode: 0644
 
 # TODO
-- name: Set controller IP in kubeconfig
+- name: set controller IP in kubeconfig
   replace:
     path: ~{{ ansible_user }}/k0s-kubeconfig.yml
     regexp: 'localhost'
-    replace: "{{ ansible_host }}"
+    replace: "{{ ansible_default_ipv4.address }}"
 
 # TODO
 - name: get kubeconfig from k0s initial controller
-  become: false
+  become: true
   fetch:
     src: "~{{ ansible_user }}/k0s-kubeconfig.yml"
     dest: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"

@@ -7,7 +7,9 @@
     enabled: true
     state: started
   when:
-    - not ansible_hostname in k0s_cluster_nodes.workers
+    - ansible_hostname == k0s_cluster_nodes.initial_controller or
+      ansible_fqdn == k0s_cluster_nodes.initial_controller
+    # - not ansible_hostname in k0s_cluster_nodes.workers
 
 - name: ensure k0s worker are enabled on boot
   become: true
@@ -16,6 +18,7 @@
     enabled: true
     state: started
   when:
-    - ansible_hostname in k0s_cluster_nodes.workers
+    - ansible_hostname in k0s_cluster_nodes.workers or
+      ansible_fqdn in k0s_cluster_nodes.workers
 
 ...
