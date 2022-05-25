@@ -6,17 +6,14 @@
     config: "{{ k0s_config_dir }}/k0s.yaml"
   register: k0s_reset
 
-- name: d
-  debug:
-    msg: "{{ k0s_reset }}"
-
 - name: reboot nodes
   block:
     - name: reboot server
-      shell: sleep 2 && reboot
+      command: sleep 2 && reboot
+      failed_when: false
+      changed_when: false
       async: 1
       poll: 0
-      ignore_errors: true
 
     - name: wait for the reboot to complete if there was a change.
       wait_for_connection:
