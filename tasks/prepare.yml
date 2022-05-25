@@ -22,10 +22,15 @@
   package:
     update_cache: true
 
-- name: install dependency
-  package:
-    name: "{{ k0s_requirements }}"
-    state: present
+- name: dependecies
+  block:
+    - name: install dependency
+      package:
+        name: "{{ k0s_requirements }}"
+        state: present
+
+    - name: update facts to get latest information
+      setup:
   when:
     - k0s_requirements is defined
     - k0s_requirements | count > 0
