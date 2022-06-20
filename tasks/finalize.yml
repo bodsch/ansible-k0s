@@ -1,5 +1,34 @@
 ---
 
+# # TODO
+# - name: copy config file to user home directory
+#   copy:
+#     src: "{{ k0s_data_dir }}/pki/admin.conf"
+#     dest: ~{{ ansible_user }}/k0s-kubeconfig.yml
+#     remote_src: true
+#     owner: "{{ ansible_user }}"
+#     mode: 0644
+#
+# # TODO
+# - name: Set controller IP in kubeconfig
+#   replace:
+#     path: ~{{ ansible_user }}/k0s-kubeconfig.yml
+#     regexp: 'localhost'
+#     replace: "{{ ansible_host }}"
+#
+# # TODO
+# - name: get kubeconfig from k0s initial controller
+#   become: false
+#   fetch:
+#     src: "~{{ ansible_user }}/k0s-kubeconfig.yml"
+#     dest: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
+#     flat: true
+#     validate_checksum: false
+#
+# - name: "print kubeconfig command"
+#   debug:
+#     msg: "To use Cluster: export KUBECONFIG={{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
+
 # TODO
 - name: copy config file to user home directory
   copy:

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch-logging
+  namespace: kube-system
+  labels:
+    k8s-app: elasticsearch-logging
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  serviceName: elasticsearch-logging
+  replicas: 2
+  selector:
+    matchLabels:
+      k8s-app: elasticsearch-logging
+  template:
+    metadata:
+      labels:
+        k8s-app: elasticsearch-logging
+    spec:
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      serviceAccountName: elasticsearch-logging
+      priorityClassName: system-cluster-critical
+      initContainers:
+      - name: elasticsearch-logging-init
+        image: alpine:3.6
+        command: ["/sbin/sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      containers:
+      - name: elasticsearch-logging
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
+        resources:
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 100m
+        ports:
+        - containerPort: 9200
+          name: db
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: elasticsearch-logging
+          mountPath: /data
+        env:
+        - name: cluster.name
+          value: elasticsearch-logging
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: discovery.zen.ping.unicast.hosts
+          value: "elasticsearch-discovery.kube-system.svc.cluster.local"
+        - name: cluster.initial_master_nodes
+          value: "elasticsearch-logging-0,elasticsearch-logging-1"
+        - name: "NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MINIMUM_MASTER_NODES
+          value: "1"
+      volumes:
+      - name: elasticsearch-logging
+        emptyDir: {}

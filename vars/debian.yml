@@ -2,5 +2,6 @@
 
 k0s_requirements:
   - iproute2
+  - kubernetes-client
 
 ...

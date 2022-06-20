@@ -1,0 +1,38 @@
+---
+
+- name: addons prepare
+  include_tasks: addons/prepare.yml
+  loop:
+    "{{ k0s_addons | dict2items }}"
+  loop_control:
+    index_var: index
+    loop_var: addon
+    label: "addon: {{ addon.value.name }}"
+  when:
+    - addon.value.name
+    - addon.value.enabled | default('false')
+
+- name: addon depedencies
+  include_tasks: addons/depedencies.yml
+  loop:
+    "{{ k0s_addons | dict2items }}"
+  loop_control:
+    index_var: index
+    loop_var: addon
+    label: "addon: {{ addon.value.name }}"
+  when:
+    - addon.value.name
+    - addon.value.enabled | default('false')
+    - addon.value.dependencies | default([]) | count > 0
+
+- name: addons install
+  include_tasks: addons/install.yml
+  loop:
+    "{{ k0s_addons | dict2items }}"
+  loop_control:
+    index_var: index
+    loop_var: addon
+    label: "addon: {{ addon.value.name }}"
+  when:
+    - addon.value.name
+    - addon.value.enabled | default('false')

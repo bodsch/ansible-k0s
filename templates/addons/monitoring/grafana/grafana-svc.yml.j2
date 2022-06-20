@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  {% if monitoring_lb_address != '' -%}
+  type: LoadBalancer
+  externalIPs:
+  - {{ monitoring_lb_address }}
+  {% endif -%}
+  ports:
+  - name: http
+    port: 3000
+    targetPort: http
+  selector:
+    app: grafana

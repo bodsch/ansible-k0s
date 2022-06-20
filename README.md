@@ -77,6 +77,14 @@ k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 - `k0s_service`
 - `k0s_worker`
 
+### kubectl
+
+```bash
+export
+
+```
+
+
 
 ## Contribution
 

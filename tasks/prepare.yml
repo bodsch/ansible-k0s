@@ -114,6 +114,11 @@
     group: "{{ k0s_system_group }}"
     mode: 0755
 
+- name: merge k0s network configuration between defaults and custom
+  set_fact:
+    k0s_network: "{{ k0s_defaults_network |
+      combine( k0s_network, recursive=True ) }}"
+
 - name: create ansible local facts directory
   file:
     dest: /etc/ansible/facts.d

@@ -28,6 +28,7 @@ class K0sInstall(object):
         self.force = module.params.get("force")
         self.config = module.params.get("config")
         self.data_dir = module.params.get("data_dir")
+        self.enable_worker = module.params.get("enable_worker")
         self.token_file = module.params.get("token_file")
         self.arguments = module.params.get("arguments")
 
@@ -40,6 +41,7 @@ class K0sInstall(object):
         module.log(msg=" force        : {} ({})".format(self.force, type(self.force)))
         module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
         module.log(msg=" data_dir     : {} ({})".format(self.data_dir, type(self.data_dir)))
+        module.log(msg=" enable_worker: {} ({})".format(self.enable_worker, type(self.enable_worker)))
         module.log(msg=" token_file   : {} ({})".format(self.token_file, type(self.token_file)))
         module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
         module.log(msg="----------------------------")
@@ -102,6 +104,9 @@ class K0sInstall(object):
         args.append(self.state)
         args.append("--data-dir")
         args.append(self.data_dir)
+
+        if self.state == "controller" and self.enable_worker:
+            args.append("--enable-worker")
 
         if self.config is not None and os.path.isfile(self.config):
             args.append("--config")
@@ -207,6 +212,11 @@ def main():
                 required=False,
                 default="/var/lib/k0s",
                 type='str'
+            ),
+            enable_worker=dict(
+                required=False,
+                default=False,
+                type=bool
             ),
             arguments=dict(
                 required=False,
