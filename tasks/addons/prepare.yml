@@ -1,9 +1,5 @@
 ---
 
-# - name: d
-#   debug:
-#     msg: "{{ addon }}"
-
 - name: ensure {{ addon.value.name }} addons directory exists
   file:
     state: directory

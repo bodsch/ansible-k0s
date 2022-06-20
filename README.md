@@ -80,7 +80,7 @@ k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 ### kubectl
 
 ```bash
-export
+export ...
 
 ```
 

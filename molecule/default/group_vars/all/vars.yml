@@ -23,6 +23,33 @@ k0s_cluster_nodes:
 #   workers: "{{ k0s_workers }}"
 
 k0s_addons:
+
+  kubeproxy:
+    name: kube-proxy
+    version: latest
+    ipvs_scheduler: rr
+    mode: iptables
+    directories:
+      - kubeproxy
+    templates:
+      - kubeproxy/kubeproxy-sa.yml
+      - kubeproxy/kubeproxy-rbac.yml
+      - kubeproxy/kubeproxy-cm.yml
+      - kubeproxy/kubeproxy-ds.yml
+
+  kubedns:
+    enabled: true
+    name: kube-dns
+    directories:
+      - kubedns
+    templates:
+      - kubedns/kubedns-sa.yml
+      - kubedns/kubedns-rbac.yml
+      - kubedns/kubedns-cm.yml
+      - kubedns/kubedns-svc.yml
+      - kubedns/kubedns-dp.yml
+      - kubedns/kubedns-autoscale-dp.yml
+
   dashboard:
     enabled: true
     name: kubernetes-dashboard
@@ -36,16 +63,31 @@ k0s_addons:
       - dashboard/dashboard-svc.yml
       - dashboard/dashboard-dp.yml
 
-  kubedns:
-    name: kube-dns
+  metric_server:
+    name: metric-server
     directories:
-      - kubedns
+      - metric-server
     templates:
-      - kubedns/kubedns-sa.yml
-      - kubedns/kubedns-rbac.yml
-      - kubedns/kubedns-cm.yml
-      - kubedns/kubedns-svc.yml
-      - kubedns/kubedns-dp.yml
-      - kubedns/kubedns-autoscale-dp.yml
+      - metric-server/metric-server-sa.yml
+      - metric-server/metrics-server-rbac.yml
+      - metric-server/metrics-apiservice.yml
+      - metric-server/metrics-server-svc.yml
+      - metric-server/metrics-server-dp.yml
+
+  ingress_nginx:
+    name: ingress-nginx
+    directories:
+      - ingress-nginx
+    dependencies:
+      - name: ingress-nginx
+        kind: namespace
+        files:
+          - ingress-nginx/ingress-controller-ns.yml
+    templates:
+      - ingress-nginx/ingress-controller-sa.yml
+      - ingress-nginx/ingress-controller-cm.yml
+      - ingress-nginx/ingress-controller-rbac.yml
+      - ingress-nginx/ingress-controller-svc.yml
+      - ingress-nginx/ingress-controller-dp.yml
 
 ...

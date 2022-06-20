@@ -28,12 +28,21 @@ k0s_defaults_network:
     subnet: 10.96.0
     dns_ip: 10.96.0.10
     domain_name: cluster.local
+  vip:
+    interface: ""
+    address: 172.16.35.9
+  lb:
+    secure_port: 8443
+    api_url: "https://172.16.35.9:8443"
+  ingress:
+    lb_address: 172.16.35.9
+
 
 go_arch_map:
   x86_64: 'amd64'
   aarch64: 'arm64'
 
-system_arch: "{{
+system_architecture: "{{
   go_arch_map[ansible_architecture] |
   default(ansible_architecture) }}"
 

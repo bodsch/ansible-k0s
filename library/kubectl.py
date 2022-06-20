@@ -6,6 +6,7 @@
 
 from __future__ import absolute_import, division, print_function
 # from ruamel.yaml import YAML
+import re
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -86,7 +87,11 @@ class KubeCtl(object):
         args.append(self._kubectl)
         args.append("get")
 
-        args.append(self.resource)
+        if self.resource:
+            resource_type = self.resource.get('type', None)
+            resource_name = self.resource.get('name', None)
+
+        args.append(resource_type)
 
         if len(self.kubeconfig) > 0:
             args.append(f"--kubeconfig={self.kubeconfig.strip()}")
@@ -104,11 +109,36 @@ class KubeCtl(object):
 
         rc, out, err = self._exec(args)
 
-        # if len(out) > 0:
-        #     yaml = YAML()
-        #     code = yaml.load(out)
-        #
-        #     self.module.log(msg=f"{code}")
+        if rc == 0:
+            _failed = False
+            _changed = False
+            state_string = "unknown"
+
+            if out:
+                re_filter = rf"^{resource_name}([ ]+)(?P<resource_state>.*)$"
+
+                pattern = re.compile(re_filter, re.MULTILINE)
+
+                state = re.search(pattern, out)
+
+                if state:
+                    state_string = state.group('resource_state')
+
+            return dict(
+                failed=_failed,
+                changed=_changed,
+                cmd=" ".join(args),
+                rc=rc,
+                state=state_string
+            )
+
+        else:
+            return dict(
+                rc=rc,
+                cmd=" ".join(args),
+                msg=err,
+                failed=True
+            )
 
         return dict(
             failed=_failed,
@@ -172,7 +202,7 @@ class KubeCtl(object):
                 return dict(
                     rc=rc,
                     cmd=" ".join(args),
-                    msg=f"file {self.filename} successful applied.",
+                    msg=f"{self.filename} successful applied.",
                     failed=_failed,
                     changed=_changed
                 )
@@ -217,7 +247,7 @@ def main():
             ),
             resource=dict(
                 required=False,
-                type=str
+                type=dict
             ),
             namespace=dict(
                 required=False,

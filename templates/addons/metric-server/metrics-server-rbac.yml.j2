@@ -1,5 +1,6 @@
-apiVersion: rbac.authorization.k8s.io/v1
+---
 kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: system:metrics-server
 rules:
@@ -13,6 +14,7 @@ rules:
   - get
   - list
   - watch
+
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -26,9 +28,10 @@ rules:
 - apiGroups: ["metrics.k8s.io"]
   resources: ["pods"]
   verbs: ["get", "list", "watch"]
+
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: system:metrics-server
 roleRef:
@@ -39,9 +42,10 @@ subjects:
 - kind: ServiceAccount
   name: metrics-server
   namespace: kube-system
+
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: metrics-server-auth-reader
   namespace: kube-system
@@ -53,9 +57,10 @@ subjects:
 - kind: ServiceAccount
   name: metrics-server
   namespace: kube-system
+
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: metrics-server:system:auth-delegator
 roleRef:

@@ -1,4 +1,11 @@
+---
+kind: ConfigMap
 apiVersion: v1
+metadata:
+  labels:
+    app: kube-proxy
+  name: kube-proxy
+  namespace: kube-system
 data:
   config.conf: |-
     apiVersion: kubeproxy.config.k8s.io/v1alpha1
@@ -10,9 +17,10 @@ data:
       acceptContentTypes: ""
       burst: 10
       contentType: application/vnd.kubernetes.protobuf
-      kubeconfig: /var/lib/kube-proxy/kubeconfig.conf
+      # kubeconfig: /var/lib/kube-proxy/kubeconfig.conf
+      kubeconfig: {{ k0s_data_dir }}/pki/admin.conf
       qps: 5
-    clusterCIDR: {{ pod_network_cidr }}
+    clusterCIDR: {{ k0s_network.pod.network_cidr }}
     configSyncPeriod: 10m0s
     conntrack:
       maxPerCore: 32768
@@ -27,21 +35,22 @@ data:
       syncPeriod: 30s
     ipvs:
       minSyncPeriod: 0s
-      scheduler: {{ kubeproxy_ipvs_scheduler }}
+      scheduler: {{ k0s_addons['kubeproxy'].ipvs_scheduler | default('rr') }}
       syncPeriod: 30s
-    mode: {{ kubeproxy_mode }}
+    mode: {{ k0s_addons['kubeproxy'].mode | default('iptables') }}
     featureGates:
       SupportIPVSProxyMode: true
     oomScoreAdj: -998
     resourceContainer: /kube-proxy
     udpIdleTimeout: 250ms
+
   kubeconfig.conf: |-
     apiVersion: v1
     kind: Config
     clusters:
     - cluster:
         certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        server: {{ lb_api_url }}
+        server: {{ k0s_network.lb.api_url }}
       name: default
     contexts:
     - context:
@@ -54,9 +63,4 @@ data:
     - name: default
       user:
         tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-kind: ConfigMap
-metadata:
-  labels:
-    app: kube-proxy
-  name: kube-proxy
-  namespace: kube-system
+

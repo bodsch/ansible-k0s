@@ -1,5 +1,8 @@
 ---
 
+- name: install kubectl
+  include_tasks: addons/install_kubectl.yml
+
 - name: addons prepare
   include_tasks: addons/prepare.yml
   loop:
@@ -36,3 +39,5 @@
   when:
     - addon.value.name
     - addon.value.enabled | default('false')
+
+...

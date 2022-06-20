@@ -2,10 +2,6 @@
 
 - name: dependency management
   block:
-    # - name: d
-    #   debug:
-    #     msg: "{{ addon }}"
-
     - name: copy {{ addon.value.name }} addon template dependencies
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
       template:
@@ -20,12 +16,13 @@
       when:
         - addon.value.dependencies is defined
 
-    - name: "apply {{ addon.value.name }} addon dependencies #1"
+    - name: apply {{ addon.value.name }} addon dependencies
       when:
         - addon.value.dependencies is defined
         - copy_addon_deps
       kubectl:
         state: apply
+        validate: true
         kubeconfig: "{{ k0s_data_dir }}/pki/admin.conf"
         filename: "{{ k0s_addon_dir }}/{{ item.1 }}"
       with_subelements:
@@ -38,34 +35,16 @@
       retries: 10
       delay: 2
 
-    - name: "apply {{ addon.value.name }} addon dependencies #2"
-      when:
-        - addon.value.dependencies is defined
-        - copy_addon_deps
-      command: |
-        kubectl \
-          --kubeconfig={{ k0s_data_dir }}/pki/admin.conf \
-          apply \
-          --filename={{ k0s_addon_dir }}/{{ item.1 }}
-      with_subelements:
-        - "{{
-        addon.value.dependencies }}"
-        - files
-      delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-      run_once: true
-      register: apply_addon_deps
-      until: apply_addon_deps.rc == 0
-      retries: 10
-      delay: 2
-
-    - name: "check {{ addon.value.name }} addon dependencies status #1"
+    - name: check {{ addon.value.name }} addon dependencies status
       when:
         - addon is defined
         - addon.value.dependencies | default([]) | count > 0
         - apply_addon_deps
       kubectl:
         state: get
-        resource: "{{ item.kind }}"
+        resource:
+          type: "{{ item.kind }}"
+          name: "{{ item.name }}"
         namespace: "{{ item.namespace | default('') }}"
         kubeconfig: "{{ k0s_data_dir }}/pki/admin.conf"
         arguments:
@@ -73,34 +52,40 @@
     #      --no-headers \
           #--output=custom-columns=NAME:.metadata.name,STATUS:.status.phase | \
     #      grep {{ item.name }} | awk '{ print $2}' | uniq
-      with_items: "{{ addon.value.dependencies }}"
+      loop: "{{ addon.value.dependencies }}"
+      loop_control:
+        label: "addon: {{ addon.value.name }} - dependency: {{ item.name }} - {{ item.kind }}"
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
       run_once: true
       register: check_addon_deps
-      until: check_addon_deps.stdout == 'Running' or check_addon_deps.stdout == 'Active'
+      until: check_addon_deps.state in ['Running', 'Active']
       retries: 10
       delay: 15
 
-    - name: "check {{ addon.value.name }} addon dependencies status #2"
-      when:
-        - addon is defined
-        - addon.value.dependencies | default([]) | count > 0
-        - apply_addon_deps
-      shell: |
-        kubectl \
-          --namespace={{ item.namespace | default('') }} \
-          --kubeconfig={{ k0s_data_dir }}/pki/admin.conf \
-          get {{ item.kind }} \
-          --no-headers \
-          --output=custom-columns=NAME:.metadata.name,STATUS:.status.phase | \
-          grep {{ item.name }} | awk '{ print $2}' | uniq
-      with_items: "{{ addon.value.dependencies }}"
-      delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-      run_once: true
-      register: check_addon_deps
-      until: check_addon_deps.stdout == 'Running' or check_addon_deps.stdout == 'Active'
-      retries: 10
-      delay: 15
+    - name: d
+      debug:
+        msg: "{{ check_addon_deps }}"
+
+    # - name: "check {{ addon.value.name }} addon dependencies status #2"
+    #   when:
+    #     - addon is defined
+    #     - addon.value.dependencies | default([]) | count > 0
+    #     - apply_addon_deps
+    #   shell: |
+    #     kubectl \
+    #       --namespace={{ item.namespace | default('') }} \
+    #       --kubeconfig={{ k0s_data_dir }}/pki/admin.conf \
+    #       get {{ item.kind }} \
+    #       --no-headers \
+    #       --output=custom-columns=NAME:.metadata.name,STATUS:.status.phase | \
+    #       grep {{ item.name }} | awk '{ print $2}' | uniq
+    #   with_items: "{{ addon.value.dependencies }}"
+    #   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+    #   run_once: true
+    #   register: check_addon_deps
+    #   until: check_addon_deps.stdout == 'Running' or check_addon_deps.stdout == 'Active'
+    #   retries: 10
+    #   delay: 15
 
   when:
     - addon.value.dependencies is defined

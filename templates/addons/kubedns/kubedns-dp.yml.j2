@@ -32,7 +32,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: coredns/coredns:1.4.0
+        image: coredns/coredns:{{ k0s_addons['coredns'].version | default('latest') }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:

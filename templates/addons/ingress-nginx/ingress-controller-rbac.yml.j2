@@ -1,5 +1,6 @@
-apiVersion: rbac.authorization.k8s.io/v1
+---
 kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: nginx-ingress-clusterrole
   labels:
@@ -52,9 +53,10 @@ rules:
       - ingresses/status
     verbs:
       - update
+
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: nginx-ingress-role
   namespace: ingress-nginx
@@ -92,9 +94,10 @@ rules:
       - endpoints
     verbs:
       - get
+
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: nginx-ingress-role-nisa-binding
   namespace: ingress-nginx
@@ -109,9 +112,10 @@ subjects:
   - kind: ServiceAccount
     name: nginx-ingress-serviceaccount
     namespace: ingress-nginx
+
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: nginx-ingress-clusterrole-nisa-binding
   labels:

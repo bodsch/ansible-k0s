@@ -3,13 +3,7 @@
 - name: install addon
   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
   block:
-
-    # - name: d
-    #   debug:
-    #     msg: "{{ addon }}"
-
     - name: copy {{ addon.value.name }} addon files
-      # delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
       copy:
         src: "addons/{{ item }}"
         dest: "{{ k0s_addon_dir }}/{{ item }}"
@@ -23,7 +17,6 @@
         - addon.value.files is defined
 
     - name: create {{ addon.value.name }} addon template files
-      # delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
       template:
         src: "addons/{{ item }}.j2"
         dest: "{{ k0s_addon_dir }}/{{ item }}"
@@ -35,7 +28,6 @@
       register: copy_addon_templates
 
     - name: apply {{ addon.value.name }} addon files
-      # delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
       kubectl:
         state: apply
         validate: true
@@ -51,26 +43,5 @@
       delay: 2
       when:
         - copy_addon_templates
-
-    # - name: d
-    #   debug:
-    #     msg: "{{ apply_addon }}"
-
-
-# # - name: apply {{ addon.value.name }} addon files #2
-# #   when:
-# #     - copy_addon_templates
-# #   command: |
-# #     kubectl \
-# #       --kubeconfig={{ k0s_data_dir }}/pki/admin.conf \
-# #       apply \
-# #       --filename={{ k0s_addon_dir }}/{{ item }}
-# #   with_items: "{{ addon.value.directories }}"
-# #   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-# #   run_once: true
-# #   register: apply_addon
-# #   until: apply_addon.rc == 0
-# #   retries: 10
-# #   delay: 2
 
 ...

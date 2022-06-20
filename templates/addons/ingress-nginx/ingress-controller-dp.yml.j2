@@ -1,5 +1,6 @@
-apiVersion: apps/v1
+---
 kind: Deployment
+apiVersion: apps/v1
 metadata:
   name: nginx-ingress-controller
   namespace: ingress-nginx
@@ -24,7 +25,7 @@ spec:
       serviceAccountName: nginx-ingress-serviceaccount
       containers:
         - name: nginx-ingress-controller
-          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.23.0
+          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:{{ k0s_addons['ingress_nginx'].version | default('latest') }}
           args:
             - /nginx-ingress-controller
             - --configmap=$(POD_NAMESPACE)/nginx-configuration

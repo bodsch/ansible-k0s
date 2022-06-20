@@ -1,5 +1,6 @@
-apiVersion: extensions/v1beta1
+---
 kind: Deployment
+apiVersion: apps/v1
 metadata:
   name: metrics-server
   namespace: kube-system
@@ -18,7 +19,7 @@ spec:
       serviceAccountName: metrics-server
       containers:
       - name: metrics-server
-        image: k8s.gcr.io/metrics-server-amd64:v0.3.1
+        image: k8s.gcr.io/metrics-server-amd64:{{ k0s_addons['metrics_server'].version | default('latest') }}
         imagePullPolicy: Always
         command:
         - /metrics-server

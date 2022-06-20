@@ -1,5 +1,6 @@
-apiVersion: apps/v1
+---
 kind: DaemonSet
+apiVersion: apps/v1
 metadata:
   labels:
     k8s-app: kube-proxy
@@ -27,7 +28,7 @@ spec:
       hostNetwork: true
       containers:
       - name: kube-proxy
-        image: k8s.gcr.io/kube-proxy-amd64:v{{ kube_version }}
+        image: k8s.gcr.io/kube-proxy-amd64:{{ k0s_addons['kubeproxy'].version | default('latest') }}
         command:
         - /usr/local/bin/kube-proxy
         - --config=/var/lib/kube-proxy/config.conf
