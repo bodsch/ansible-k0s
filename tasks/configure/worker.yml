@@ -6,6 +6,9 @@
       - "{{ k0s_cluster_nodes.workers | join(', ') }}"
   run_once: true
 
+# TODO
+# check worker state
+
 - name: create worker join token
   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
   k0s_token:

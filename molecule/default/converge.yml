@@ -32,15 +32,15 @@
 #       tags:
 #         - k0s_controller
 
-# - name: worker
-#   hosts: k0s_workers
-#   any_errors_fatal: true
-#   gather_facts: true
-#
-#   roles:
-#     - role: ansible-k0s
-# #      tags:
-# #        - k0s_worker
+- name: worker
+  hosts: k0s_workers
+  any_errors_fatal: true
+  gather_facts: true
+
+  roles:
+    - role: ansible-k0s
+#      tags:
+#        - k0s_worker
 
 # - name: addons
 #   hosts: k0s-controller
