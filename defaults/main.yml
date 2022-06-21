@@ -27,10 +27,6 @@ k0s_direct_download: false
 
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 
-k0s_addon_dir: "{{ k0s_config_dir }}/addons"
-
-k0s_addons: {}
-
 # Kubernetes cluster network
 k0s_network: {}
 #   pod:

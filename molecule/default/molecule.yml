@@ -92,7 +92,6 @@ platforms:
       - name: k8s
         ipv4_address: "10.20.0.22"
 
-
 provisioner:
   name: ansible
   ansible_args:

@@ -74,15 +74,4 @@
 #   tags:
 #     - k0s_finalize
 
-- name: k0s addons
-  include_tasks: addons/main.yml
-  run_once: true
-  when:
-    - ansible_hostname == k0s_cluster_nodes.initial_controller or
-      ansible_fqdn == k0s_cluster_nodes.initial_controller
-    - k0s_addons is defined
-    - k0s_addons | count > 0
-  tags:
-    - k0s_addons
-
 ...
