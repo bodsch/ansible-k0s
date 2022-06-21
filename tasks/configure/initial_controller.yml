@@ -41,8 +41,8 @@
        ansible_facts.userspace_bits == "64" ) or
       ansible_facts.architecture is search("aarch64")
 
-- name: flush handlers
-  meta: flush_handlers
+# - name: flush handlers
+#   meta: flush_handlers
 
 - name: start k0s controller
   service:

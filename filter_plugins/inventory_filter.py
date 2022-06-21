@@ -1,6 +1,8 @@
 # python 3 headers, required if submitting to Ansible
 
 from __future__ import (absolute_import, print_function)
+import re
+
 __metaclass__ = type
 
 from ansible.utils.display import Display
@@ -17,6 +19,7 @@ class FilterModule(object):
         return {
             'group_members': self.group_members,
             'remove_group_members': self.remove_group_members,
+            'k8s_cluster_url': self.k8s_cluster_url,
         }
 
     def group_members(self, data, lookup):
@@ -73,3 +76,27 @@ class FilterModule(object):
         display.v("= {}".format(result))
 
         return result
+
+    def k8s_cluster_url(self, data, destination_url):
+        """
+
+        """
+        # display.v("- {} ({})".format(data, type(data)))
+        re_filter = "^(http[s]?://)(?P<host>.*).*:(?P<port>\\d.*)"
+
+        clusters = data.get('clusters', [])
+
+        if clusters:
+            host_name = ""
+            server = clusters[0].get('cluster', {}).get('server', None)
+            # display.v("- {} ({})".format(server, type(server)))
+            pattern = re.compile(re_filter)
+            host = re.search(pattern, server)
+            if host:
+                host_name = host.group('host')
+                display.v("- found {}, should be {}".format(host_name, destination_url))
+
+            if host_name == destination_url:
+                return True
+
+        return False

@@ -34,4 +34,4 @@ fi
 #   --skip-tags=worker
 
 
-tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge ${TOX_ARGS} -- -v
+tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge ${TOX_ARGS}

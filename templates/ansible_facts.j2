@@ -2,6 +2,7 @@
 # {{ ansible_managed }}
 cat <<EOF
 {
-  "version": "{{ k0s_version }}"
+  "version": "{{ k0s_version }}",
+  "config_checksum": "{{ __stat_controller_k0s_conf.stat.checksum }}"
 }
 EOF
