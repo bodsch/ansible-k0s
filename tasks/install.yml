@@ -29,12 +29,6 @@
   when:
     - stat_file_binary.stat.exists
 
-- name: create local facts
-  template:
-    src: ansible_facts.j2
-    dest: /etc/ansible/facts.d/k0s.fact
-    mode: 0755
-
 - name: create link to binary
   file:
     src: "{{ k0s_install_path }}/k0s"

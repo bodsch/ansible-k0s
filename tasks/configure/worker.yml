@@ -6,52 +6,65 @@
       - "{{ k0s_cluster_nodes.workers | join(', ') }}"
   run_once: true
 
-- name: create worker join token
-  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-  k0s_token:
-    state: create
-    role: worker
-    expiry: "{{ k0s_token_expiry }}"
+- name: get k0s state
+  k0s_status:
     data_dir: "{{ k0s_data_dir }}"
-  register: worker_join_token
+  register: worker_k0s_state
   run_once: true
 
-- name: store worker join token
-  set_fact:
-    join_token_worker: "{{ worker_join_token.token }}"
-    cacheable: true
+- name: install worker
+  block:
+    - name: create worker join token
+      delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+      k0s_token:
+        state: create
+        role: worker
+        expiry: "{{ k0s_token_expiry }}"
+        data_dir: "{{ k0s_data_dir }}"
+      register: worker_join_token
+      run_once: true
+
+    - name: store worker join token
+      set_fact:
+        join_token_worker: "{{ worker_join_token.token }}"
+        cacheable: true
+      when:
+        - worker_join_token is defined
+        - worker_join_token.token is defined
+
+    - name: reload facts
+      setup:
+
+    - name: write the k0s token file on worker
+      template:
+        src: k0s/worker-token.j2
+        dest: "{{ k0s_token_files.worker }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0600
+
+    - name: create k0s worker service with install command
+      k0s_install:
+        state: worker
+        force: "{{ k0s_force }}"
+        data_dir: "{{ k0s_data_dir }}"
+        token_file: "{{ k0s_token_files.worker }}"
+        arguments: "{{ k0s_extra_args | default([]) }}"
+      notify:
+        - daemon-reload
+        - restart k0s_worker
+      register: install_worker_cmd
   when:
-    - worker_join_token is defined
-    - worker_join_token.token is defined
+    - not worker_k0s_state.state == "installed"
 
-- name: reload facts
-  setup:
-
-- name: write the k0s token file on worker
-  template:
-    src: k0s/worker-token.j2
-    dest: "{{ k0s_token_files.worker }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: 0600
-
-- name: create k0s worker service with install command
-  k0s_install:
-    state: worker
-    force: "{{ k0s_force }}"
-    data_dir: "{{ k0s_data_dir }}"
-    token_file: "{{ k0s_token_files.worker }}"
-    arguments: "{{ k0s_extra_args | default([]) }}"
-  notify:
-    - daemon-reload
-    - restart k0s_worker
-  register: install_worker_cmd
+- name: flush handlers
+  meta: flush_handlers
 
 - name: enable and check k0s service
   become: true
   systemd:
     name: k0sworker
-    state: restarted
+    state: started
     enabled: true
 
 ...

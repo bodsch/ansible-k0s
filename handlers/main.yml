@@ -20,4 +20,14 @@
     name: k0sworker
     state: restarted
 
+- name: wait for k8s apiserver
+  wait_for:
+    host: localhost
+    port: 6443
+    delay: 15
+    timeout: 180
+  when:
+    - k0scontroller_started.changed or
+      not k0scontroller_started.state == "started"
+
 ...

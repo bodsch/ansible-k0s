@@ -74,4 +74,10 @@
   tags:
     - k0s_finalize
 
+- name: print kubeconfig command
+  debug:
+    msg: "To use Cluster: 'export KUBECONFIG={{ k0s_artifacts_dir }}/k0s-kubeconfig.yml'"
+  run_once: true
+  tags:
+    - k0s_finalize
 ...

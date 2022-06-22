@@ -1,10 +1,14 @@
 ---
 
+ansible_user: root
+
 # k0s_initial_controller: "{{ groups | group_members('k0s_initial_controller') | first }}"
 # k0s_controllers: "{{ groups | group_members('k0s_controllers') }}"
 # k0s_workers: "{{ groups | group_members('k0s_workers') }}"
 
 k0s_data_dir: /opt/k0s
+
+k0s_worker_on_controller: true
 
 k0s_cluster_nodes:
   initial_controller: k0s-controller
@@ -17,7 +21,5 @@ k0s_cluster_nodes:
 #   initial_controller: "{{ k0s_initial_controller }}"
 #   controllers: "{{ k0s_controllers }}"
 #   workers: "{{ k0s_workers }}"
-
-ansible_user: root
 
 ...

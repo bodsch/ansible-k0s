@@ -16,11 +16,32 @@ k0s_token_files:
   controller: "{{ k0s_config_dir }}/controller.token"
   worker: "{{ k0s_config_dir }}/worker.token"
 
+k0s_defaults_network:
+  pod:
+    network_cidr: 10.244.0.0/16
+  service:
+    ip_range: 10.96.0.0/12
+    node_port_range: 30000-32767
+  api:
+    service_ip: 10.96.0.1
+  cluster:
+    subnet: 10.96.0
+    dns_ip: 10.96.0.10
+    domain_name: cluster.local
+  vip:
+    interface: ""
+    address: 172.16.35.9
+  lb:
+    secure_port: 8443
+    api_url: "https://172.16.35.9:8443"
+  ingress:
+    lb_address: 172.16.35.9
+
 go_arch_map:
   x86_64: 'amd64'
   aarch64: 'arm64'
 
-system_arch: "{{
+system_architecture: "{{
   go_arch_map[ansible_architecture] |
   default(ansible_architecture) }}"
 
