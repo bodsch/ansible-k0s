@@ -48,12 +48,21 @@
   service:
     name: k0scontroller
     state: started
+  register: k0scontroller_started
+  notify:
+    - wait for k8s apiserver
 
-- name: wait for k8s apiserver
-  wait_for:
-    host: localhost
-    port: 6443
-    delay: 15
-    timeout: 180
+- name: flush handlers
+  meta: flush_handlers
+
+# - name: wait for k8s apiserver
+#   wait_for:
+#     host: localhost
+#     port: 6443
+#     delay: 15
+#     timeout: 180
+#   when:
+#     - k0scontroller_started.changed or
+#       not k0scontroller_started.state == "started"
 
 ...

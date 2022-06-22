@@ -13,7 +13,7 @@
   file:
     path: "{{ item }}"
     state: directory
-    mode: 0775
+    mode: 0755
   loop:
     - "{{ k0s_config_dir }}"
     - "{{ k0s_data_dir }}"
@@ -45,13 +45,15 @@
       ansible_fqdn == k0s_cluster_nodes.initial_controller
 
 - name: find k0s config file on initial controller
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
   stat:
     path: "{{ k0s_data_dir }}/pki/admin.conf"
     get_md5: false
     get_mime: false
     get_attributes: false
   register: __stat_controller_k0s_conf
-  changed_when: not __stat_controller_k0s_conf.stat.exists
+  changed_when:
+    - not __stat_controller_k0s_conf.stat.exists | default('false')
 
 - name: create local facts
   template:
