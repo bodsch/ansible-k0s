@@ -55,7 +55,9 @@
     - name: set k0s version to {{ _latest_release.json.tag_name[1:] }}
       set_fact:
         k0s_version: "{{ _latest_release.json.tag_name[1:] }}"
-  run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
+  delegate_to: localhost
+  become: false
+  run_once: true
   when:
     - k0s_version == "latest"
 
@@ -65,7 +67,9 @@
     k0s_local_tmp_directory: "{{
         lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
         default('/var/cache/ansible/k0s', true) }}/{{ k0s_main_version }}"
-  run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
+  delegate_to: localhost
+  become: false
+  run_once: true
   when:
     - k0s_direct_download
 
