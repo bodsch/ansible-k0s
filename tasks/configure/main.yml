@@ -20,6 +20,9 @@
     - "{{ k0s_libexec_dir }}"
 
 - name: handle k0s config file
+  when:
+    - ansible_hostname in k0s_cluster_nodes | k0s_cluster_members('controller') or
+      ansible_fqdn in k0s_cluster_nodes | k0s_cluster_members('controller')
   block:
     - name: create default k0s config
       k0s_config:
@@ -39,10 +42,6 @@
         mode: 0660
       when:
         - k0s_use_custom_config
-
-  when:
-    - ansible_hostname == k0s_cluster_nodes.initial_controller or
-      ansible_fqdn == k0s_cluster_nodes.initial_controller
 
 - name: find k0s config file on initial controller
   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"

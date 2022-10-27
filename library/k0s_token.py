@@ -32,13 +32,13 @@ class K0sToken(object):
         self.arguments = module.params.get("arguments")
 
         module.log(msg="----------------------------")
-        module.log(msg=" k0s          : {} ({})".format(self._k0s, type(self._k0s)))
-        module.log(msg=" state        : {} ({})".format(self.state, type(self.state)))
-        module.log(msg=" role         : {} ({})".format(self.role, type(self.role)))
-        module.log(msg=" expiry       : {} ({})".format(self.expiry, type(self.expiry)))
-        module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
-        module.log(msg=" data_dir     : {} ({})".format(self.data_dir, type(self.data_dir)))
-        module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
+        module.log(msg=f" k0s          : {self._k0s}")
+        module.log(msg=f" state        : {self.state}")
+        module.log(msg=f" role         : {self.role}")
+        module.log(msg=f" expiry       : {self.expiry}")
+        module.log(msg=f" config       : {self.config}")
+        module.log(msg=f" data_dir     : {self.data_dir}")
+        module.log(msg=f" arguments    : {self.arguments}")
         module.log(msg="----------------------------")
 
     def run(self):
@@ -140,9 +140,9 @@ class K0sToken(object):
         """
         """
         rc, out, err = self.module.run_command(args, check_rc=True)
-        self.module.log(msg="  rc : '{}'".format(rc))
-        self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
-        self.module.log(msg="  err: '{}'".format(err))
+        self.module.log(msg=f"  rc : '{rc}'")
+        self.module.log(msg=f"  out: '{out}'")
+        self.module.log(msg=f"  err: '{err}'")
         return rc, out, err
 
 
@@ -189,7 +189,7 @@ def main():
     k = K0sToken(module)
     result = k.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

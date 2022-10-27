@@ -1,0 +1,49 @@
+---
+
+ansible_user: root
+
+k0s_force: false
+
+# k0s_initial_controller: "{{ groups | group_members('k0s_initial_controller') | first }}"
+# k0s_controllers: "{{ groups | group_members('k0s_controllers') }}"
+# k0s_workers: "{{ groups | group_members('k0s_workers') }}"
+
+# k0s_cluster_nodes:
+#   initial_controller: "{{ k0s_initial_controller }}"
+#   controllers: "{{ k0s_controllers }}"
+#   workers: "{{ k0s_workers }}"
+
+k0s_data_dir: /opt/k0s
+
+k0s_worker_on_controller: true
+
+k0s_cluster_nodes:
+  initial_controller: k0s-controller-1
+  controllers:
+    - k0s-controller-2
+    - k0s-controller-3
+  workers:
+    - k0s-worker-1
+
+k0s_network:
+  pod:
+    network_cidr: 10.244.0.0/16
+  service:
+    ip_range: 10.96.0.0/12
+    node_port_range: 30000-32767
+  api:
+    service_ip: 10.96.0.1
+  cluster:
+    subnet: 10.96.0
+    dns_ip: 10.96.0.10
+    domain_name: cluster.local
+  vip:
+    interface: ""
+    address: 172.16.35.9
+  lb:
+    secure_port: 8443
+    api_url: "https://172.16.35.9:8443"
+  ingress:
+    lb_address: 172.16.35.9
+
+...

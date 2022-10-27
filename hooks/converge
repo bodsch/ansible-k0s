@@ -1,37 +1,5 @@
 #!/usr/bin/env bash
 
-TOX_ARGS=
+. hooks/_tox_base
 
-if [ -n "${TOX_SCENARIO}" ]
-then
-  TOX_ARGS="--scenario-name ${TOX_SCENARIO}"
-fi
-
-# tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge -- --list-tags
-
-# tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge -- \
-#   --tags=configure \
-#   --tags=download \
-#   --tags=install \
-#   --skip-tags=initial_configure \
-#   --skip-tags=controller \
-#   --skip-tags=worker
-#
-# tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge -- \
-#   --tags=configure \
-#   --tags=download \
-#   --tags=install \
-#   --tags=initial_configure \
-#   --skip-tags=controller \
-#   --skip-tags=worker
-#
-# tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge -- \
-#   --tags=configure \
-#   --tags=download \
-#   --tags=install \
-#   --tags=controller \
-#   --skip-tags=initial_configure \
-#   --skip-tags=worker
-
-
-tox -e ${TOX_PYTHON}-${TOX_ANSIBLE} -- molecule converge ${TOX_ARGS}
+tox ${TOX_OPTS} -- molecule converge ${TOX_ARGS}

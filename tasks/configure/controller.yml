@@ -6,48 +6,66 @@
       - "{{ k0s_cluster_nodes.controllers | join(', ') }}"
   run_once: true
 
-- name: create controller join token
-  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-  k0s_token:
-    state: create
-    role: controller
-    expiry: "{{ k0s_token_expiry }}"
-    data_dir: "{{ k0s_data_dir }}"
-  register: controller_join_token
-  run_once: true
-
-- name: store controller join token
-  set_fact:
-    join_token_controller: "{{ controller_join_token.token }}"
-    cacheable: true
-  when:
-    - controller_join_token is defined
-    - controller_join_token.token is defined
-
-- name: reload facts
-  setup:
-
-- name: write the k0s token file on controller
-  template:
-    src: k0s/controller-token.j2
-    dest: "{{ k0s_token_files.controller }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: 0600
-
-- name: create k0s controller service with install command
-  k0s_install:
+- name: get k0s state
+  k0s_status:
     state: controller
-    force: "{{ k0s_force }}"
-    token_file: "{{ k0s_token_files.controller }}"
     data_dir: "{{ k0s_data_dir }}"
-    arguments: "{{ k0s_extra_args | default([]) }}"
-  notify:
-    - daemon-reload
-    - restart k0s_controller
-  register: install_controller_cmd
+  register: controller_k0s_state
+  # run_once: true
+
+- name: register controller
+  when:
+    - controller_k0s_state is defined
+    - controller_k0s_state.state is defined
+    - controller_k0s_state.state != "installed"
+  block:
+    - name: create controller join token
+      delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+      run_once: true
+      k0s_token:
+        state: create
+        role: controller
+        expiry: "{{ k0s_token_expiry }}"
+        data_dir: "{{ k0s_data_dir }}"
+      register: controller_join_token
+
+    - name: store controller join token
+      set_fact:
+        join_token_controller: "{{ controller_join_token.token }}"
+        cacheable: true
+      when:
+        - controller_join_token is defined
+        - controller_join_token.token is defined
+
+    - name: reload facts
+      setup:
+
+    - name: write the k0s token file on controller
+      template:
+        src: k0s/controller-token.j2
+        dest: "{{ k0s_token_files.controller }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0600
+
+    - name: create k0s controller service with install command
+      k0s_install:
+        state: controller
+        force: "{{ k0s_force }}"
+        config: "{{ k0s_config_dir }}/k0s.yaml"
+        token_file: "{{ k0s_token_files.controller }}"
+        data_dir: "{{ k0s_data_dir }}"
+        arguments: "{{ k0s_extra_args | default([]) }}"
+      notify:
+        - daemon-reload
+        - restart k0s_controller
+      register: install_controller_cmd
 
 - name: arm specific systemd drop-in
+  when:
+    - (ansible_facts.architecture is search("arm") and
+       ansible_facts.userspace_bits == "64" ) or
+      ansible_facts.architecture is search("aarch64")
   block:
     - name: create k0scontroller service drop-in directory
       file:
@@ -64,11 +82,6 @@
         - daemon-reload
         - restart k0s_controller
 
-  when:
-    - (ansible_facts.architecture is search("arm") and
-       ansible_facts.userspace_bits == "64" ) or
-      ansible_facts.architecture is search("aarch64")
-
 - name: flush handlers
   meta: flush_handlers
 
@@ -76,14 +89,14 @@
   become: true
   service:
     name: k0scontroller
-    state: restarted
+    # state: restarted
     enabled: true
 
-- name: wait for k8s apiserver
-  wait_for:
-    host: localhost
-    port: 6443
-    delay: 15
-    timeout: 180
+# - name: wait for k8s apiserver
+#   wait_for:
+#     host: localhost
+#     port: 6443
+#     delay: 15
+#     timeout: 180
 
 ...

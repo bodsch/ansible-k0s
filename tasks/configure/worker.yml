@@ -8,21 +8,24 @@
 
 - name: get k0s state
   k0s_status:
+    state: worker
     data_dir: "{{ k0s_data_dir }}"
   register: worker_k0s_state
-  run_once: true
+  # run_once: true
 
 - name: install worker
+  when:
+    - not worker_k0s_state.state == "installed"
   block:
     - name: create worker join token
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+      run_once: true
       k0s_token:
         state: create
         role: worker
         expiry: "{{ k0s_token_expiry }}"
         data_dir: "{{ k0s_data_dir }}"
       register: worker_join_token
-      run_once: true
 
     - name: store worker join token
       set_fact:
@@ -54,8 +57,6 @@
         - daemon-reload
         - restart k0s_worker
       register: install_worker_cmd
-  when:
-    - not worker_k0s_state.state == "installed"
 
 - name: flush handlers
   meta: flush_handlers

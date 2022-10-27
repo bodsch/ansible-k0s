@@ -69,8 +69,8 @@ class K0sStatus(object):
         args = []
         args.append(self._k0s)
         args.append("status")
-        args.append("--data-dir")
-        args.append(self.data_dir)
+        # args.append("--data-dir")
+        # args.append(self.data_dir)
         args.append("--out")
         args.append("json")
 
@@ -81,6 +81,13 @@ class K0sStatus(object):
         if rc == 0:
             _failed = False
             _changed = False
+            _msg = out
+
+            # defaults
+            version = None
+            role = None
+            kubelet_auth_cfg = None
+            admin_kube_config = None
 
             data = json.loads(out)  # json.dumps(, sort_keys=True)
             # self.module.log(msg=f"  {type(data)}")
@@ -89,23 +96,30 @@ class K0sStatus(object):
                 version = data.get('Version')
                 role = data.get('Role')
                 kubelet_auth_cfg = data.get('K0sVars', {}).get('KubeletAuthConfigPath', None)
-            else:
-                version = None
-                role = None
-                kubelet_auth_cfg = None
+                admin_kube_config = data.get('K0sVars', {}).get('AdminKubeConfigPath', None)
 
             self.module.log(msg=f"  role: {role}")
             self.module.log(msg=f"  version: {version}")
             self.module.log(msg=f"  kubelet_auth_cfg: {kubelet_auth_cfg}")
+            self.module.log(msg=f"  admin_kube_config: {admin_kube_config}")
 
-            if kubelet_auth_cfg is not None and os.path.isfile(kubelet_auth_cfg):
-                msg = f"This k0s instance has already been successfully installed and configured in version {version}."
+            if self.state == "initial-controller":
+                if kubelet_auth_cfg:
+                    if os.path.isfile(kubelet_auth_cfg):
+                        _msg = f"This k0s instance has already been successfully installed and configured in version {version}."
+                    else:
+                        _msg = f"This k0s instance has already been in version {version} installed and configured, but the auth configfile {kubelet_auth_cfg} is missing!"
+
+            elif self.state == "controller":
+                if admin_kube_config:
+                    if os.path.isfile(admin_kube_config):
+                        _msg = f"This k0s instance has already been successfully installed and configured in version {version}."
 
             return dict(
                 rc=rc,
                 cmd=" ".join(args),
                 role=role,
-                msg=msg,
+                msg=_msg,
                 version=version,
                 state="installed",
                 failed=_failed,
@@ -148,6 +162,10 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
+            state=dict(
+                default="worker",
+                choices=["initial-controller", "controller", "worker"]
+            ),
             data_dir=dict(
                 required=False,
                 default="/var/lib/k0s",
@@ -165,7 +183,7 @@ def main():
     k = K0sStatus(module)
     result = k.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

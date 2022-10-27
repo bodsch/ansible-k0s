@@ -6,9 +6,16 @@
       - "{{ k0s_cluster_nodes.initial_controller }}"
   run_once: true
 
+- name: get k0s state
+  k0s_status:
+    state: initial-controller
+    data_dir: "{{ k0s_data_dir }}"
+  register: worker_k0s_state
+  # run_once: true
+
 - name: create k0s initial controller service with install command
   k0s_install:
-    state: controller
+    state: initial-controller
     force: "{{ k0s_force }}"
     config: "{{ k0s_config_dir }}/k0s.yaml"
     data_dir: "{{ k0s_data_dir }}"

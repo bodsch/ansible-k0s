@@ -1,0 +1,31 @@
+---
+
+name: code linter
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - testing
+
+jobs:
+  lint:
+    name: linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v3
+
+      - name: lint
+        uses: docker://ghcr.io/github/super-linter:slim-v4
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GH_REGISTRY_TOKEN }}
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_ANSIBLE: true
+          # VALIDATE_MARKDOWN: true
+          VALIDATE_YAML: true
+
+...

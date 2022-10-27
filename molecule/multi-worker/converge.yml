@@ -1,0 +1,59 @@
+---
+
+# - name: install
+#   hosts: all
+#   any_errors_fatal: true
+#   gather_facts: true
+#
+#   roles:
+#     - role: ansible-k0s
+#       tags:
+#         - k0s_prepare
+#         # - k0s_install
+#         # - k0s_configure
+
+- name: initial controller
+  hosts: k0s-controller
+  any_errors_fatal: true
+  gather_facts: true
+
+  roles:
+    - role: ansible-k0s
+#      tags:
+#        - k0s_initial_controller
+
+# - name: controller
+#   hosts: k0s-2
+#   any_errors_fatal: true
+#   gather_facts: true
+#
+#   roles:
+#     - role: ansible-k0s
+#       tags:
+#         - k0s_controller
+
+- name: worker
+  hosts: k0s_workers
+  any_errors_fatal: true
+  gather_facts: true
+
+  roles:
+    - role: ansible-k0s
+#      tags:
+#        - k0s_worker
+
+# - name: addons
+#   hosts: k0s-controller
+#   any_errors_fatal: true
+#   gather_facts: true
+#
+#   roles:
+#     - role: ansible-k0s
+#       tags:
+#         - k0s_addons
+#       when:
+#         - k0s_addons is defined
+#         - k0s_addons.dashboard is defined
+#         - k0s_addons.dashboard.enabled is defined
+#         - k0s_addons.dashboard.enabled
+#       # addon: "{{ k0s_addons.dashboard }}"

@@ -36,14 +36,14 @@ class K0sInstall(object):
         self._worker_systemd_unit_file = "/etc/systemd/system/k0sworker.service"
 
         module.log(msg="----------------------------")
-        module.log(msg=" k0s          : {} ({})".format(self._k0s, type(self._k0s)))
-        module.log(msg=" state        : {} ({})".format(self.state, type(self.state)))
-        module.log(msg=" force        : {} ({})".format(self.force, type(self.force)))
-        module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
-        module.log(msg=" data_dir     : {} ({})".format(self.data_dir, type(self.data_dir)))
-        module.log(msg=" enable_worker: {} ({})".format(self.enable_worker, type(self.enable_worker)))
-        module.log(msg=" token_file   : {} ({})".format(self.token_file, type(self.token_file)))
-        module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
+        module.log(msg=f" k0s          : {self._k0s}")
+        module.log(msg=f" state        : {self.state}")
+        module.log(msg=f" force        : {self.force}")
+        module.log(msg=f" config       : {self.config}")
+        module.log(msg=f" data_dir     : {self.data_dir}")
+        module.log(msg=f" enable_worker: {self.enable_worker}")
+        module.log(msg=f" token_file   : {self.token_file}")
+        module.log(msg=f" arguments    : {self.arguments}")
         module.log(msg="----------------------------")
 
     def run(self):
@@ -72,11 +72,12 @@ class K0sInstall(object):
             self.module.log(msg="force mode ...")
             if self.state == "controller" and os.path.isfile(self._controller_systemd_unit_file):
                 os.remove(self._controller_systemd_unit_file)
+
             if self.state == "worker" and os.path.isfile(self._worker_systemd_unit_file):
                 os.remove(self._worker_systemd_unit_file)
 
-        if self.state == "controller":
-            if not os.path.isfile(self.config):
+        if self.state in ["initial-controller", "controller"]:
+            if not self.config or not os.path.isfile(self.config):
                 return dict(
                     msg=f"config file {self.config} not exists",
                     changed=False,
@@ -101,11 +102,16 @@ class K0sInstall(object):
         args = []
         args.append(self._k0s)
         args.append("install")
-        args.append(self.state)
+
+        if self.state in ["initial-controller", "controller"]:
+            args.append("controller")
+        else:
+            args.append(self.state)
+
         args.append("--data-dir")
         args.append(self.data_dir)
 
-        if self.state == "controller" and self.enable_worker:
+        if self.state in ["initial-controller", "controller"] and self.enable_worker:
             args.append("--enable-worker")
 
         if self.config is not None and os.path.isfile(self.config):
@@ -125,7 +131,7 @@ class K0sInstall(object):
         rc, out, err = self._exec(args)
 
         if rc == 0:
-            if self.state == "controller":
+            if self.state in ["initial-controller", "controller"]:
                 if self._verify_unit_file(self._controller_systemd_unit_file):
                     _msg = f"systemd unit file {self._controller_systemd_unit_file} successful created.",
 
@@ -155,16 +161,19 @@ class K0sInstall(object):
         """
         """
         if os.path.isfile(self._controller_systemd_unit_file):
-            file_size = int(os.path.getsize(self.config))
-            if file_size > 0:
-                return True
+            if self.config is not None and os.path.isfile(self.config):
+                file_size = int(os.path.getsize(self.config))
+                if file_size > 0:
+                    return True
 
-        return False
+                return False
+
+            return True
 
     def _remove_directory(self, directory):
         """
         """
-        self.module.log(msg="remove directory {}".format(directory))
+        self.module.log(msg=f"remove directory {directory}")
 
         for root, dirs, files in os.walk(directory, topdown=False):
             for name in files:
@@ -176,9 +185,9 @@ class K0sInstall(object):
         """
         """
         rc, out, err = self.module.run_command(args, check_rc=False)
-        self.module.log(msg="  rc : '{}'".format(rc))
-        self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
-        self.module.log(msg="  err: '{}'".format(err))
+        self.module.log(msg=f"  rc : '{rc}'")
+        self.module.log(msg=f"  out: '{out}'")
+        self.module.log(msg=f"  err: '{err}'")
         return rc, out, err
 
 
@@ -197,8 +206,8 @@ def main():
                 type=bool
             ),
             state=dict(
-                default="controller",
-                choices=["controller", "worker"]
+                default="worker",
+                choices=["initial-controller", "controller", "worker"]
             ),
             config=dict(
                 required=False,
@@ -230,7 +239,7 @@ def main():
     k = K0sInstall(module)
     result = k.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

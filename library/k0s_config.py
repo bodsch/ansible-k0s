@@ -31,12 +31,12 @@ class K0sConfig(object):
         self.arguments = module.params.get("arguments")
 
         module.log(msg="----------------------------")
-        module.log(msg=" k0s          : {} ({})".format(self._k0s, type(self._k0s)))
-        module.log(msg=" state        : {} ({})".format(self.state, type(self.state)))
-        module.log(msg=" force        : {} ({})".format(self.force, type(self.force)))
-        module.log(msg=" config       : {} ({})".format(self.config, type(self.config)))
-        module.log(msg=" data_dir     : {} ({})".format(self.data_dir, type(self.data_dir)))
-        module.log(msg=" arguments    : {} ({})".format(self.arguments, type(self.arguments)))
+        module.log(msg=f" k0s          : {self._k0s}")
+        module.log(msg=f" state        : {self.state}")
+        module.log(msg=f" force        : {self.force}")
+        module.log(msg=f" config       : {self.config}")
+        module.log(msg=f" data_dir     : {self.data_dir}")
+        module.log(msg=f" arguments    : {self.arguments}")
         module.log(msg="----------------------------")
 
     def run(self):
@@ -148,7 +148,7 @@ class K0sConfig(object):
     def _remove_directory(self, directory):
         """
         """
-        self.module.log(msg="remove directory {}".format(directory))
+        self.module.log(msg=f"remove directory {directory}")
 
         for root, dirs, files in os.walk(directory, topdown=False):
             for name in files:
@@ -173,9 +173,9 @@ class K0sConfig(object):
         """
         """
         rc, out, err = self.module.run_command(args, check_rc=True)
-        self.module.log(msg="  rc : '{}'".format(rc))
-        self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
-        self.module.log(msg="  err: '{}'".format(err))
+        self.module.log(msg=f"  rc : '{rc}'")
+        self.module.log(msg=f"  out: '{out}'")
+        self.module.log(msg=f"  err: '{err}'")
         return rc, out, err
 
 
@@ -218,7 +218,7 @@ def main():
     k = K0sConfig(module)
     result = k.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 
