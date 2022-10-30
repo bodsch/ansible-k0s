@@ -58,48 +58,48 @@ platforms:
       - name: k8s
         ipv4_address: "10.20.0.11"
 
-  - name: k0s-controller-3
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-    privileged: true
-    pre_build_image: true
-    capabilities:
-      - SYS_ADMIN
-    tmpfs:
-      - /run
-      - /tmp
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    groups:
-      - k0s
-      - k0s_controllers
-    networks:
-      - name: k8s
-        ipv4_address: "10.20.0.12"
-
-  - name: k0s-worker-1
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-    privileged: true
-    pre_build_image: true
-    capabilities:
-      - SYS_ADMIN
-    volumes:
-      - /tmp/molecule/k0s/worker-1:/opt:rw
-    groups:
-      - k0s
-      - k0s_workers
-    networks:
-      - name: k8s
-        ipv4_address: "10.20.0.31"
+  # - name: k0s-controller-3
+  #   image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+  #   command: ${MOLECULE_DOCKER_COMMAND:-""}
+  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+  #   privileged: true
+  #   pre_build_image: true
+  #   capabilities:
+  #     - SYS_ADMIN
+  #   tmpfs:
+  #     - /run
+  #     - /tmp
+  #   volumes:
+  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  #   groups:
+  #     - k0s
+  #     - k0s_controllers
+  #   networks:
+  #     - name: k8s
+  #       ipv4_address: "10.20.0.12"
+  #
+  # - name: k0s-worker-1
+  #   image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+  #   command: ${MOLECULE_DOCKER_COMMAND:-""}
+  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+  #   privileged: true
+  #   pre_build_image: true
+  #   capabilities:
+  #     - SYS_ADMIN
+  #   volumes:
+  #     - /tmp/molecule/k0s/worker-1:/opt:rw
+  #   groups:
+  #     - k0s
+  #     - k0s_workers
+  #   networks:
+  #     - name: k8s
+  #       ipv4_address: "10.20.0.31"
 
 provisioner:
   name: ansible
   ansible_args:
     - --diff
-    - -v
+    # - -v
   config_options:
     defaults:
       deprecation_warnings: True

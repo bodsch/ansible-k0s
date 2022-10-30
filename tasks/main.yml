@@ -66,6 +66,11 @@
   tags:
     - k0s_service
 
+- name: create facts
+  include_tasks: facts.yml
+  tags:
+    - k0s_initial_controller
+
 - name: finalize
   include_tasks: finalize.yml
   when:

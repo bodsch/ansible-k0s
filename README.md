@@ -59,12 +59,22 @@ k0s_libexec_dir: /usr/libexec/k0s
 
 k0s_token_expiry: "1h"
 
+k0s_config: {}
+
 k0s_use_custom_config: false
 
 k0s_direct_download: false
 
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 ```
+
+### `k0s_config`
+
+Extension of the automatically created `k0s.yaml`
+The structure must correspond to the created configuration. An example file can be viewed [here](./k0s_example.yaml).
+
+
+
 
 ### tags
 

@@ -9,8 +9,8 @@
     get_mime: false
     get_attributes: false
   register: k0s_admin_conf
-  changed_when:
-    - not k0s_admin_conf.stat.exists | default('false')
+  #changed_when:
+  #  - not k0s_admin_conf.stat.exists | default('false')
 
 - name: save config file to ansible controller
   become: true
@@ -53,10 +53,26 @@
     remote_src: true
     mode: 0644
   when:
-    - not k0s_kubeconfig.stat.exists | default('false')
+    # - k0s_admin_conf.stat is defined
+    # - k0s_admin_conf.stat.checksum is defined
+    # - k0s_kubeconfig is defined
+    # - k0s_kubeconfig.stat is defined
+    # - k0s_kubeconfig.stat.checksum is defined
+    - k0s_kubeconfig.stat.checksum | default('X') != k0s_admin_conf.stat.checksum | default('x')
+    # - not k0s_kubeconfig.stat.exists | default('false')
 
 - name:
   block:
+    # - name: get checksum of k0s kubeconfig file on ansible controller
+    #   delegate_to: localhost
+    #   become: false
+    #   stat:
+    #     path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
+    #     get_md5: false
+    #     get_mime: false
+    #     get_attributes: false
+    #   register: k0s_kubeconfig
+
     - name: read kubeconfig
       delegate_to: localhost
       become: false

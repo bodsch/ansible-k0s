@@ -6,6 +6,8 @@
 
 from __future__ import absolute_import, division, print_function
 import os
+import json
+import yaml
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -26,17 +28,19 @@ class K0sConfig(object):
 
         self.state = module.params.get("state")
         self.force = module.params.get("force")
-        self.config = module.params.get("config")
+        self.config_file = module.params.get("config_file")
+        self.config_overwrites = module.params.get("config_overwrites")
         self.data_dir = module.params.get("data_dir")
         self.arguments = module.params.get("arguments")
 
         module.log(msg="----------------------------")
-        module.log(msg=f" k0s          : {self._k0s}")
-        module.log(msg=f" state        : {self.state}")
-        module.log(msg=f" force        : {self.force}")
-        module.log(msg=f" config       : {self.config}")
-        module.log(msg=f" data_dir     : {self.data_dir}")
-        module.log(msg=f" arguments    : {self.arguments}")
+        module.log(msg=f" k0s               : {self._k0s}")
+        module.log(msg=f" state             : {self.state}")
+        module.log(msg=f" force             : {self.force}")
+        module.log(msg=f" config file       : {self.config_file}")
+        module.log(msg=f" config overwrites : {self.config_overwrites}")
+        module.log(msg=f" data_dir          : {self.data_dir}")
+        module.log(msg=f" arguments         : {self.arguments}")
         module.log(msg="----------------------------")
 
     def run(self):
@@ -73,19 +77,33 @@ class K0sConfig(object):
         _msg = "initial call"
         file_size = 0
 
-        if self.force and os.path.isfile(self.config):
+        if self.force and os.path.isfile(self.config_file):
             self.module.log(msg="force mode ...")
-            os.remove(self.config)
+            os.remove(self.config_file)
 
-        if self.state == "create" and os.path.isfile(self.config):
-            file_size = int(os.path.getsize(self.config))
+        if self.state == "create" and os.path.isfile(self.config_file):
+            file_size = int(os.path.getsize(self.config_file))
             if file_size > 0:
                 return dict(
-                    msg=f"The configuration file {self.config} already exists.",
+                    msg=f"The configuration file {self.config_file} already exists.",
                     changed=False,
                     failed=False
                 )
 
+        result = self._create_config()
+
+        return result
+
+        return dict(
+            failed=_failed,
+            changed=_changed,
+            cmd=_cmd,
+            msg=_msg
+        )
+
+    def _create_config(self):
+        """
+        """
         args = []
         args.append(self._k0s)
         args.append("config")
@@ -95,7 +113,7 @@ class K0sConfig(object):
 
         if self.state == "validate":
             args.append("--config")
-            args.append(self.config)
+            args.append(self.config_file)
 
         if len(self.arguments) > 0:
             for arg in self.arguments:
@@ -113,10 +131,13 @@ class K0sConfig(object):
 
                 self._save_config(out)
 
+                if self.config_overwrites and len(self.config_overwrites) > 0:
+                    self._apply_overwrites()
+
                 return dict(
                     rc=rc,
                     cmd=" ".join(args),
-                    msg=f"The configuration file {self.config} was successfully created.",
+                    msg=f"The configuration file {self.config_file} was successfully created.",
                     failed=_failed,
                     changed=_changed
                 )
@@ -125,7 +146,7 @@ class K0sConfig(object):
                 return dict(
                     rc=rc,
                     cmd=" ".join(args),
-                    msg=f"The configuration file {self.config} is valid.",
+                    msg=f"The configuration file {self.config_file} is valid.",
                     failed=_failed,
                     changed=_changed
                 )
@@ -137,13 +158,6 @@ class K0sConfig(object):
                 msg=err,
                 failed=True
             )
-
-        return dict(
-            failed=_failed,
-            changed=_changed,
-            cmd=_cmd,
-            msg=_msg
-        )
 
     def _remove_directory(self, directory):
         """
@@ -159,7 +173,7 @@ class K0sConfig(object):
     def _save_config(self, data):
         """
         """
-        data_file = open(self.config, 'w')
+        data_file = open(self.config_file, 'w')
         data_file.write(data)
         data_file.close()
 
@@ -167,15 +181,52 @@ class K0sConfig(object):
         if isinstance(force_mode, str):
             mode = int(force_mode, base=8)
 
-        os.chmod(self.config, mode)
+        os.chmod(self.config_file, mode)
+
+    def _apply_overwrites(self):
+        """
+        """
+        data = None
+        if os.path.isfile(self.config_file):
+            with open(self.config_file, "r") as stream:
+                try:
+                    data = yaml.safe_load(stream)
+                except yaml.YAMLError as exc:
+                    self.module.log(msg=f"  ERROR : '{exc}'")
+
+            if data:
+                data = self._rec_merge(data, self.config_overwrites)
+
+                with open(self.config_file, 'w') as file:
+                    documents = yaml.dump(data, file)
+
+    def _rec_merge(self, d1, d2):
+        '''
+        Update two dicts of dicts recursively,
+        if either mapping has leaves that are non-dicts,
+        the second's leaf overwrites the first's.
+        '''
+        from collections.abc import MutableMapping
+
+        for k, v in d1.items():
+            if k in d2:
+                # this next check is the only difference!
+                if all(isinstance(e, MutableMapping) for e in (v, d2[k])):
+                    d2[k] = self._rec_merge(v, d2[k])
+                # we could further check types and merge as appropriate here.
+        d3 = d1.copy()
+        d3.update(d2)
+        return d3
 
     def _exec(self, args):
         """
         """
         rc, out, err = self.module.run_command(args, check_rc=True)
         self.module.log(msg=f"  rc : '{rc}'")
-        self.module.log(msg=f"  out: '{out}'")
-        self.module.log(msg=f"  err: '{err}'")
+
+        if rc != 0:
+            self.module.log(msg=f"  out: '{out}'")
+            self.module.log(msg=f"  err: '{err}'")
         return rc, out, err
 
 
@@ -197,7 +248,7 @@ def main():
                 default="create",
                 choices=["create", "edit", "status", "validate"]
             ),
-            config=dict(
+            config_file=dict(
                 required=True,
                 type='str'
             ),
@@ -210,7 +261,12 @@ def main():
                 required=False,
                 default=[],
                 type=list
-            )
+            ),
+            config_overwrites=dict(
+                required=False,
+                default={},
+                type=dict
+            ),
         ),
         supports_check_mode=True,
     )

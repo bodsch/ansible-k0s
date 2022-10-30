@@ -186,8 +186,10 @@ class K0sInstall(object):
         """
         rc, out, err = self.module.run_command(args, check_rc=False)
         self.module.log(msg=f"  rc : '{rc}'")
-        self.module.log(msg=f"  out: '{out}'")
-        self.module.log(msg=f"  err: '{err}'")
+
+        if rc != 0:
+            self.module.log(msg=f"  out: '{out}'")
+            self.module.log(msg=f"  err: '{err}'")
         return rc, out, err
 
 

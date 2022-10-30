@@ -11,7 +11,7 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 
 
-class K0sStatus(object):
+class K0sCompletion(object):
     """
       Main Class
     """
@@ -25,16 +25,16 @@ class K0sStatus(object):
 
         self._k0s = module.get_bin_path('k0s', True)
 
-        self.state = module.params.get("state")
-        self.data_dir = module.params.get("data_dir")
+        self.shell = module.params.get("shell")
         self.arguments = module.params.get("arguments")
 
         module.log(msg="----------------------------")
         module.log(msg=f" k0s          : {self._k0s}")
-        module.log(msg=f" state        : {self.state}")
-        module.log(msg=f" data_dir     : {self.data_dir}")
+        module.log(msg=f" shell        : {self.shell}")
         module.log(msg=f" arguments    : {self.arguments}")
         module.log(msg="----------------------------")
+
+        self.bash_completion_file = "/etc/bash_completion.d/k0s"
 
     def run(self):
         """
@@ -46,11 +46,11 @@ class K0sStatus(object):
             changed=False,
         )
 
-        result = self.k0s_token()
+        result = self.k0s_completion()
 
         return result
 
-    def k0s_token(self):
+    def k0s_completion(self):
         """
             k0s status --help
             Get k0s instance status information
@@ -66,13 +66,28 @@ class K0sStatus(object):
         _cmd = None
         _msg = "initial call"
 
+
+        if self.shell == "bash" and os.path.isfile(self.bash_completion_file):
+            return dict(
+                failed = False,
+                changed = False,
+                msg = "bash completion already created."
+            )
+
         args = []
         args.append(self._k0s)
-        args.append("status")
-        # args.append("--data-dir")
-        # args.append(self.data_dir)
-        args.append("--out")
-        args.append("json")
+        args.append("completion")
+        args.append(self.shell)
+
+        # if self.shell == "bash":
+        #     args.append(">")
+        #     args.append("/etc/bash_completion.d/k0s")
+        # elif self.shell == "zsh":
+        #     args.append(">")
+        #     args.append("${fpath[1]}/_k0s")
+        # elif self.shell == "fish":
+        #     args.append("|")
+        #     args.append("source")
 
         self.module.log(msg=f" - args {args}")
 
@@ -83,44 +98,27 @@ class K0sStatus(object):
             _changed = False
             _msg = out
 
-            # defaults
-            version = None
-            role = None
-            kubelet_auth_cfg = None
-            admin_kube_config = None
+            if self.shell == "bash":
+                with open(self.bash_completion_file, 'w') as file:
+                    file.writelines(out)
+                    file.close()
 
-            data = json.loads(out)  # json.dumps(, sort_keys=True)
-            # self.module.log(msg=f"  {type(data)}")
-            # self.module.log(msg=f"  {json.dumps(data)}")
-            if isinstance(data, dict):
-                version = data.get('Version')
-                role = data.get('Role')
-                kubelet_auth_cfg = data.get('K0sVars', {}).get('KubeletAuthConfigPath', None)
-                admin_kube_config = data.get('K0sVars', {}).get('AdminKubeConfigPath', None)
-
-            self.module.log(msg=f"  role: {role}")
-            self.module.log(msg=f"  version: {version}")
-            self.module.log(msg=f"  kubelet_auth_cfg: {kubelet_auth_cfg}")
-            self.module.log(msg=f"  admin_kube_config: {admin_kube_config}")
-
-            if self.state == "initial-controller":
-                if kubelet_auth_cfg:
-                    if os.path.isfile(kubelet_auth_cfg):
-                        _msg = f"This k0s instance has already been successfully installed and configured in version {version}."
-                    else:
-                        _msg = f"This k0s instance has already been in version {version} installed and configured, but the auth configfile {kubelet_auth_cfg} is missing!"
-
-            elif self.state == "controller":
-                if admin_kube_config:
-                    if os.path.isfile(admin_kube_config):
-                        _msg = f"This k0s instance has already been successfully installed and configured in version {version}."
+                    return dict(
+                        failed = False,
+                        changed = False,
+                        msg = "bash completion successfully written."
+                    )
+            elif self.shell == "zsh":
+                # TODO
+                pass
+            elif self.shell == "fish":
+                # TODO
+                pass
 
             return dict(
                 rc=rc,
                 cmd=" ".join(args),
-                role=role,
                 msg=_msg,
-                version=version,
                 state="installed",
                 failed=_failed,
                 changed=_changed
@@ -130,10 +128,7 @@ class K0sStatus(object):
             return dict(
                 cmd=" ".join(args),
                 msg=err,
-                role=None,
-                version=None,
                 state="missing",
-                # failed=False
             )
 
         return dict(
@@ -164,14 +159,9 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(
-                default="worker",
-                choices=["initial-controller", "controller", "worker"]
-            ),
-            data_dir=dict(
-                required=False,
-                default="/var/lib/k0s",
-                type='str'
+            shell=dict(
+                default="bash",
+                choices=["bash", "zsh", "fish"]
             ),
             arguments=dict(
                 required=False,
@@ -182,7 +172,7 @@ def main():
         supports_check_mode=True,
     )
 
-    k = K0sStatus(module)
+    k = K0sCompletion(module)
     result = k.run()
 
     module.log(msg=f"= result: {result}")

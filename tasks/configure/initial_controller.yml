@@ -6,6 +6,14 @@
       - "{{ k0s_cluster_nodes.initial_controller }}"
   run_once: true
 
+- name: define 'single' argument for a single node installation
+  block:
+    - name: get cluster members
+      set_fact:
+        k0s_extra_args: ["--single"]
+      when:
+        - k0s_cluster_nodes | k0s_cluster_members('all') | count == 1
+
 - name: get k0s state
   k0s_status:
     state: initial-controller
@@ -27,6 +35,10 @@
   register: install_initial_controller_cmd
 
 - name: arm specific systemd drop-in
+  when:
+    - (ansible_facts.architecture is search("arm") and
+       ansible_facts.userspace_bits == "64" ) or
+      ansible_facts.architecture is search("aarch64")
   block:
     - name: create k0scontroller service drop-in directory
       file:
@@ -36,17 +48,12 @@
 
     - name: create overwrite.conf
       template:
-        src: init/systemd/overwrite.conf.j2
+        src: init/aarch64/systemd/overwrite.conf.j2
         dest: /etc/systemd/system/k0scontroller.service.d/overwrite.conf
         mode: 0644
       notify:
         - daemon-reload
         - restart k0s_controller
-
-  when:
-    - (ansible_facts.architecture is search("arm") and
-       ansible_facts.userspace_bits == "64" ) or
-      ansible_facts.architecture is search("aarch64")
 
 # - name: flush handlers
 #   meta: flush_handlers
@@ -59,8 +66,8 @@
   notify:
     - wait for k8s apiserver
 
-- name: flush handlers
-  meta: flush_handlers
+#- name: flush handlers
+#  meta: flush_handlers
 
 # - name: wait for k8s apiserver
 #   wait_for:
