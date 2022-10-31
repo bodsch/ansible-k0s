@@ -17,8 +17,14 @@ k0s_cluster_nodes:
   controllers: []
   workers: []
 
+k0s_extra_arguments:
+  controller:
+    - --enable-metrics-scraper
+
 k0s_token_expiry: "1h"
 
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
+
+k0s_config: {}
 
 ...

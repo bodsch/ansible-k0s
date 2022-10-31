@@ -61,7 +61,6 @@
       ansible.builtin.set_fact:
         k0s_version: "{{ _latest_release.json.tag_name[1:] }}"
 
-
 - name: define delegate instance for download handling
   ansible.builtin.set_fact:
     k0s_delegate_to: "{{ ansible_host }}"
@@ -81,10 +80,6 @@
   register: stat_k0s_path
   ignore_errors: true
 
-# - name: d
-#   debug:
-#     msg: "{{ stat_k0s_path }}"
-
 - name: remove installed k0s
   ansible.builtin.file:
     state: absent
@@ -102,10 +97,6 @@
   ansible.builtin.stat:
     path: "{{ k0s_install_path }}/k0s"
   register: stat_k0s_binary
-
-# - name: d
-#   debug:
-#     msg: "{{ stat_k0s_binary }}"
 
 - name: create download directory
   become: false
@@ -127,7 +118,7 @@
 - name: merge k0s configuration between defaults and custom
   ansible.builtin.set_fact:
     k0s_config: "{{ k0s_defaults_config | combine(k0s_config, recursive=True) }}"
-    # k0s_network: "{{ k0s_defaults_network | combine(k0s_network, recursive=True) }}"
+    k0s_extra_arguments: "{{ k0s_defaults_extra_arguments | combine(k0s_extra_arguments, recursive=True) }}"
 
 - name: create ansible local facts directory
   ansible.builtin.file:

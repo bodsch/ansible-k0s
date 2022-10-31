@@ -30,6 +30,7 @@
         force: "{{ k0s_force }}"
         data_dir: "{{ k0s_data_dir }}"
         config_file: "{{ k0s_config_dir }}/k0s.yaml"
+        config_overwrites: "{{ k0s_config | default({}) }}"
       register: default_k0s_config
 
 ...

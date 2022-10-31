@@ -19,16 +19,13 @@ Similar to [movd/k0s-ansible](https://github.com/movd/k0s-ansible), **but** bett
 
 ## Why better?
 
-This Ansible role can be used atomically.
+This Ansible role can be used atomically.  
 If no changes are necessary, none will be made.
 
-Avoid `command` calls.
+Avoid `command` calls.  
 Wherever possible, separate Ansible modules are used for this.
 
 One role for all cases.
-
-Soon also available via ansible-galaxy
-
 
 
 ## supported Operating systems
@@ -42,7 +39,7 @@ Tested on
 ## usage
 
 ```yaml
-k0s_version: 1.23.6+k0s.1
+k0s_version: 1.25.2+k0s.0
 k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 
 k0s_system_user: "{{ ansible_user }}"
@@ -58,6 +55,12 @@ k0s_cluster_nodes:
   initial_controller: ""
   controllers: []
   workers: []
+
+k0s_extra_arguments:
+  controller:
+    - --enable-metrics-scraper
+
+k0s_config: {}
 
 k0s_token_expiry: "1h"
 
@@ -144,4 +147,7 @@ If you want to use something stable, please use a [Tagged Version](https://gitla
 - [Moritz](https://github.com/movd)
 
 
+## other dokumentaions
+
+[Upgrading a k0s cluster in-place from single-master to HA](https://vadosware.io/post/upgrading-a-k0s-cluster-from-single-to-ha/#get-all-your-workloads-off-the-current-master-controllerworker-role-node)
 

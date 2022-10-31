@@ -27,7 +27,7 @@
     config: "{{ k0s_config_dir }}/k0s.yaml"
     data_dir: "{{ k0s_data_dir }}"
     enable_worker: "{{ k0s_worker_on_controller | bool }}"
-    arguments: "{{ k0s_extra_args | default([]) }}"
+    arguments: "{{ k0s_extra_arguments.controller | default([]) + k0s_extra_args | default([]) }}"
   notify:
     - daemon-reload
     - restart k0s_controller
