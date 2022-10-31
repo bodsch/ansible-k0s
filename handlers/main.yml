@@ -1,7 +1,7 @@
 ---
 
 - name: daemon-reload
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: true
     force: true
   notify: restart json_exporter
@@ -10,18 +10,18 @@
 
 - name: restart k0s_controller
   become: true
-  service:
+  ansible.builtin.service:
     name: k0scontroller
     state: restarted
 
 - name: restart k0s_worker
   become: true
-  service:
+  ansible.builtin.service:
     name: k0sworker
     state: restarted
 
 - name: wait for k8s apiserver
-  wait_for:
+  ansible.builtin.wait_for:
     host: localhost
     port: 6443
     delay: 15
@@ -29,5 +29,12 @@
   when:
     - k0scontroller_started.changed or
       not k0scontroller_started.state == "started"
+
+- name: wait for kublet on port 10250
+  ansible.builtin.wait_for:
+    host: localhost
+    port: 10250
+    delay: 15
+    timeout: 180
 
 ...

@@ -1,7 +1,7 @@
 ---
 
 - name: configure workers
-  debug:
+  ansible.builtin.debug:
     msg:
       - "{{ k0s_cluster_nodes.workers | join(', ') }}"
   run_once: true
@@ -31,7 +31,7 @@
       register: worker_join_token
 
     - name: store worker join token
-      set_fact:
+      ansible.builtin.set_fact:
         join_token_worker: "{{ worker_join_token.token }}"
         cacheable: true
       when:
@@ -39,10 +39,10 @@
         - worker_join_token.token is defined
 
     - name: reload facts
-      setup:
+      ansible.builtin.setup:
 
     - name: write the k0s token file on worker
-      template:
+      ansible.builtin.template:
         src: k0s/worker-token.j2
         dest: "{{ k0s_token_files.worker }}"
         owner: "{{ ansible_user }}"
@@ -62,23 +62,25 @@
       register: install_worker_cmd
 
 - name: flush handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: start k0s worker
   become: true
-  systemd:
+  ansible.builtin.service:
     name: k0sworker
     state: started
     enabled: true
   register: k0sworker_started
+  notify:
+    - wait for kublet on port 10250
 
-- name: wait for kublet on port 10250
-  wait_for:
-    host: localhost
-    port: 10250
-    delay: 15
-    timeout: 180
-  when:
-    - k0sworker_started.changed or
-      not k0sworker_started.state == "started"
+# - name: wait for kublet on port 10250
+#   ansible.builtin.wait_for:
+#     host: localhost
+#     port: 10250
+#     delay: 15
+#     timeout: 180
+#   when:
+#     - k0sworker_started.changed or
+#       not k0sworker_started.state == "started"
 ...

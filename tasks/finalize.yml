@@ -3,7 +3,7 @@
 - name: get checksum of k0s config file on ansible controller
   delegate_to: localhost
   become: false
-  stat:
+  ansible.builtin.stat:
     path: "{{ k0s_local_tmp_directory }}/admin.conf"
     get_md5: false
     get_mime: false
@@ -14,7 +14,7 @@
 
 - name: save config file to ansible controller
   become: true
-  fetch:
+  ansible.builtin.fetch:
     src: "{{ k0s_data_dir }}/pki/admin.conf"
     dest: "{{ k0s_local_tmp_directory }}/admin.conf"
     flat: true
@@ -27,7 +27,7 @@
 - name: create artifacts directory on ansible controller
   delegate_to: localhost
   become: false
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ k0s_artifacts_dir }}"
     mode: 0750
@@ -35,7 +35,7 @@
 - name: get checksum of k0s kubeconfig file on ansible controller
   delegate_to: localhost
   become: false
-  stat:
+  ansible.builtin.stat:
     path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
     get_md5: false
     get_mime: false
@@ -47,7 +47,7 @@
 - name: copy admin config file to k0s kubeconfig
   delegate_to: localhost
   become: false
-  copy:
+  ansible.builtin.copy:
     src: "{{ k0s_local_tmp_directory }}/admin.conf"
     dest: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
     remote_src: true
@@ -58,14 +58,14 @@
 - name: read kubeconfig
   delegate_to: localhost
   become: false
-  slurp:
+  ansible.builtin.slurp:
     src: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
   register: k0s_kubeconfig_content
 
 - name: set controller IP in kubeconfig
   delegate_to: localhost
   become: false
-  replace:
+  ansible.builtin.replace:
     path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
     regexp: 'localhost'
     replace: "{{ ansible_default_ipv4.address }}"

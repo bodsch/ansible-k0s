@@ -1,7 +1,7 @@
 ---
 
 - name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
-  include_vars: "{{ lookup('first_found', params) }}"
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
   vars:
     params:
       paths:
@@ -19,28 +19,31 @@
       skip: true
 
 - name: update package cache
-  package:
+  ansible.builtin.package:
     update_cache: true
 
 - name: dependecies
+  when:
+    - k0s_requirements is defined
+    - k0s_requirements | count > 0
   block:
     - name: install dependency
-      package:
+      ansible.builtin.package:
         name: "{{ k0s_requirements }}"
         state: present
 
     - name: update facts to get latest information
-      setup:
-  when:
-    - k0s_requirements is defined
-    - k0s_requirements | count > 0
+      ansible.builtin.setup:
 
 - name: latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
   when:
     - k0s_version == "latest"
   block:
     - name: get latest release
-      uri:
+      ansible.builtin.uri:
         url: "https://api.github.com/repos/k0sproject/k0s/releases/latest"
         method: GET
         return_content: true
@@ -55,14 +58,12 @@
       retries: 5
 
     - name: set k0s version to {{ _latest_release.json.tag_name[1:] }}
-      set_fact:
+      ansible.builtin.set_fact:
         k0s_version: "{{ _latest_release.json.tag_name[1:] }}"
-  delegate_to: localhost
-  become: false
-  run_once: true
+
 
 - name: define delegate instance for download handling
-  set_fact:
+  ansible.builtin.set_fact:
     k0s_delegate_to: "{{ ansible_host }}"
     k0s_local_tmp_directory: "{{
         lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
@@ -74,7 +75,7 @@
     - k0s_direct_download
 
 - name: detect our installation path '{{ k0s_install_path | dirname }}'
-  stat:
+  ansible.builtin.stat:
     path: "{{ k0s_install_path | dirname }}"
     get_checksum: false
   register: stat_k0s_path
@@ -84,13 +85,10 @@
 #   debug:
 #     msg: "{{ stat_k0s_path }}"
 
-- name: old installation
-  block:
-    - name: remove installed k0s
-      file:
-        state: absent
-        path: "{{ stat_k0s_path.stat.path }}"
-
+- name: remove installed k0s
+  ansible.builtin.file:
+    state: absent
+    path: "{{ stat_k0s_path.stat.path }}"
   when:
     - stat_k0s_path is defined
     - stat_k0s_path.stat is defined
@@ -98,10 +96,10 @@
     - not stat_k0s_path.stat.isdir
 
 - name: flush handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: detect installed k0s binary
-  stat:
+  ansible.builtin.stat:
     path: "{{ k0s_install_path }}/k0s"
   register: stat_k0s_binary
 
@@ -112,14 +110,14 @@
 - name: create download directory
   become: false
   delegate_to: "{{ k0s_delegate_to }}"
-  file:
+  ansible.builtin.file:
     path: "{{ k0s_local_tmp_directory }}"
     state: directory
     mode: 0750
   run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
 
 - name: create install directory
-  file:
+  ansible.builtin.file:
     path: "{{ k0s_install_path }}"
     state: directory
     owner: "{{ k0s_system_user }}"
@@ -127,12 +125,12 @@
     mode: 0755
 
 - name: merge k0s configuration between defaults and custom
-  set_fact:
+  ansible.builtin.set_fact:
     k0s_config: "{{ k0s_defaults_config | combine(k0s_config, recursive=True) }}"
     # k0s_network: "{{ k0s_defaults_network | combine(k0s_network, recursive=True) }}"
 
 - name: create ansible local facts directory
-  file:
+  ansible.builtin.file:
     dest: /etc/ansible/facts.d
     state: directory
     owner: root

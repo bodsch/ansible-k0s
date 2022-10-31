@@ -1,7 +1,7 @@
 ---
 
 - name: configure nodes
-  debug:
+  ansible.builtin.debug:
     msg:
       - "{{ k0s_cluster_nodes }}"
       - "{{ ansible_hostname }}"
@@ -10,7 +10,7 @@
 
 - name: create k0s directories
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: 0755

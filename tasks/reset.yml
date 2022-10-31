@@ -3,13 +3,13 @@
 - name: cluster members
   delegate_to: localhost
   run_once: true
-  debug:
+  ansible.builtin.debug:
     msg:
       - "controllers : {{ k0s_cluster_nodes | k0s_cluster_members('controller') | join(', ') }}"
       - "workers     : {{ k0s_cluster_nodes | k0s_cluster_members('workers') | join(', ') }}"
 
 - name: detect installed k0s binary
-  stat:
+  ansible.builtin.stat:
     path: "{{ k0s_install_path }}/k0s"
   register: stat_k0s_binary
 
@@ -24,7 +24,7 @@
     - k0s_reset
 
 - name: remove directories
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ item }}"
   loop:
@@ -45,7 +45,7 @@
     - k0s_reset
   block:
     - name: reboot server
-      shell: |
+      ansible.builtin.shell: |
         sleep 2 && reboot
       failed_when: false
       changed_when: false
@@ -53,14 +53,14 @@
       poll: 5
 
     - name: wait for the reboot to complete if there was a change.
-      wait_for_connection:
+      ansible.builtin.wait_for_connection:
         connect_timeout: 20
         sleep: 5
         delay: 5
         timeout: 300
 
 - name: reload facts
-  setup:
+  ansible.builtin.setup:
   tags:
     - k0s_reset
 

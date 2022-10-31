@@ -1,7 +1,7 @@
 ---
 
 - name: configure controllers
-  debug:
+  ansible.builtin.debug:
     msg:
       - "{{ k0s_cluster_nodes.controllers | join(', ') }}"
   run_once: true
@@ -30,7 +30,7 @@
       register: controller_join_token
 
     - name: store controller join token
-      set_fact:
+      ansible.builtin.set_fact:
         join_token_controller: "{{ controller_join_token.token }}"
         cacheable: true
       when:
@@ -38,10 +38,10 @@
         - controller_join_token.token is defined
 
     - name: reload facts
-      setup:
+      ansible.builtin.setup:
 
     - name: write the k0s token file on controller
-      template:
+      ansible.builtin.template:
         src: k0s/controller-token.j2
         dest: "{{ k0s_token_files.controller }}"
         owner: "{{ ansible_user }}"
@@ -68,13 +68,13 @@
       ansible_facts.architecture is search("aarch64")
   block:
     - name: create k0scontroller service drop-in directory
-      file:
+      ansible.builtin.file:
         path: /etc/systemd/system/k0scontroller.service.d
         state: directory
         mode: 0750
 
     - name: create overwrite.conf
-      template:
+      ansible.builtin.template:
         src: init/aarch64/systemd/overwrite.conf.j2
         dest: /etc/systemd/system/k0scontroller.service.d/overwrite.conf
         mode: 0644
@@ -83,7 +83,7 @@
         - restart k0s_controller
 
 - name: flush handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 # - name: Wait until the process is finished and {{ k0s_data_dir }}/pki/admin.conf was created
 #   ansible.builtin.wait_for:
@@ -91,19 +91,21 @@
 #     state: present
 
 - name: start k0s controller
-  service:
+  ansible.builtin.service:
     name: k0scontroller
     state: started
   register: k0scontroller_started
+  notify:
+    - wait for k8s apiserver
 
-- name: wait for k8s apiserver on port 6443
-  wait_for:
-    host: localhost
-    port: 6443
-    delay: 15
-    timeout: 180
-  when:
-    - k0scontroller_started.changed or
-      not k0scontroller_started.state == "started"
+# - name: wait for k8s apiserver on port 6443
+#   ansible.builtin.wait_for:
+#     host: localhost
+#     port: 6443
+#     delay: 15
+#     timeout: 180
+#   when:
+#     - k0scontroller_started.changed or
+#       not k0scontroller_started.state == "started"
 
 ...

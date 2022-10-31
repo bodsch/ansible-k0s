@@ -92,12 +92,39 @@ export ...
 
 ### single controller
 
+```yaml
+k0s_cluster_nodes:
+  initial_controller: controller-1.k0s.local
+  controllers: []
+  workers: []
+```
+
 
 ### one controller with multi workers
 
+```yaml
+k0s_cluster_nodes:
+  initial_controller: controller-1.k0s.local
+  controllers: []
+  workers:
+    - worker-1.k0s.local
+    - worker-2.k0s.local
+    - worker-3.k0s.local
+```
 
 ### multi controllers with multi workers
 
+```yaml
+k0s_cluster_nodes:
+  initial_controller: controller-1.k0s.local
+  controllers:
+    - controller-2.k0s.local
+    - controller-3.k0s.local
+  workers:
+    - worker-1.k0s.local
+    - worker-2.k0s.local
+    - worker-3.k0s.local
+```
 
 
 
