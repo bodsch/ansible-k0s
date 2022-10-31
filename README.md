@@ -73,26 +73,6 @@ Extension of the automatically created `k0s.yaml`
 The structure must correspond to the created configuration. An example file can be viewed [here](./k0s_example.yaml).
 
 
-
-
-### tags
-
-- `k0s_configure`
-- `k0s_controller`
-- `k0s_download`
-- `k0s_initial_configure`
-- `k0s_install`
-- `k0s_prepare`
-- `k0s_service`
-- `k0s_worker`
-
-### kubectl
-
-```bash
-export ...
-
-```
-
 ### single controller
 
 ```yaml
@@ -129,6 +109,10 @@ k0s_cluster_nodes:
     - worker-3.k0s.local
 ```
 
+### working implementation
+
+The example of a working implementation can be viewed at [GitLab](https://gitlab.com/kubernetes-cluser).  
+A suitable infrastructure based on KVM and Terraform can be created in the repository.
 
 
 ## Contribution
