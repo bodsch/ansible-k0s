@@ -82,7 +82,6 @@ class FilterModule(object):
         """
 
         """
-        # display.v("- {} ({})".format(data, type(data)))
         re_filter = "^(http[s]?://)(?P<host>.*).*:(?P<port>\\d.*)"
 
         clusters = data.get('clusters', [])
@@ -105,9 +104,9 @@ class FilterModule(object):
     def k0s_cluster_members(self, data, member):
         """
             return all cluster controller as list
-
-
         """
+        # display.v(f"k0s_cluster_members(self, {data}, {member})")
+
         result = []
 
         initial_controller = data.get("initial_controller", None)
@@ -127,7 +126,7 @@ class FilterModule(object):
                 return []
 
         if member == 'workers':
-            workers = data.get("workers", [])
+            result += workers
 
         if member == 'all':
             if initial_controller:

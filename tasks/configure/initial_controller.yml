@@ -19,7 +19,6 @@
     state: initial-controller
     data_dir: "{{ k0s_data_dir }}"
   register: worker_k0s_state
-  # run_once: true
 
 - name: create k0s initial controller service with install command
   k0s_install:
@@ -55,28 +54,30 @@
         - daemon-reload
         - restart k0s_controller
 
-# - name: flush handlers
-#   meta: flush_handlers
+- name: flush handlers
+  meta: flush_handlers
+
+- name: Wait until the process is finished and {{ k0s_data_dir }}/pki/admin.conf was created
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  ansible.builtin.wait_for:
+    path: "{{ k0s_data_dir }}/pki/admin.conf"
+    state: present
 
 - name: start k0s controller
   service:
     name: k0scontroller
     state: started
   register: k0scontroller_started
-  notify:
-    - wait for k8s apiserver
 
-#- name: flush handlers
-#  meta: flush_handlers
-
-# - name: wait for k8s apiserver
-#   wait_for:
-#     host: localhost
-#     port: 6443
-#     delay: 15
-#     timeout: 180
-#   when:
-#     - k0scontroller_started.changed or
-#       not k0scontroller_started.state == "started"
+- name: wait for k8s apiserver on port 6443
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  wait_for:
+    host: localhost
+    port: 6443
+    delay: 15
+    timeout: 180
+  when:
+    - k0scontroller_started.changed or
+      not k0scontroller_started.state == "started"
 
 ...

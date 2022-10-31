@@ -117,6 +117,7 @@ class K0sReset(object):
 
             if os.path.isfile(self._controller_systemd_unit_file):
                 os.remove(self._controller_systemd_unit_file)
+
             if os.path.isfile(self._worker_systemd_unit_file):
                 os.remove(self._worker_systemd_unit_file)
 

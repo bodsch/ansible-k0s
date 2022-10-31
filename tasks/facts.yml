@@ -2,12 +2,14 @@
 
 - name: Wait until the process is finished and {{ k0s_data_dir }}/pki/admin.conf was created
   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  run_once: true
   ansible.builtin.wait_for:
     path: "{{ k0s_data_dir }}/pki/admin.conf"
     state: present
 
 - name: find k0s config file on initial controller ({{ k0s_data_dir }}/pki/admin.conf)
   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  run_once: true
   stat:
     path: "{{ k0s_data_dir }}/pki/admin.conf"
     get_md5: false

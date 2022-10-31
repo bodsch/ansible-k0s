@@ -15,7 +15,10 @@
 
 - name: install worker
   when:
-    - not worker_k0s_state.state == "installed"
+    - worker_k0s_state is defined
+    - worker_k0s_state.state is defined
+    - worker_k0s_state.state == "missing" or
+      not worker_k0s_state.version
   block:
     - name: create worker join token
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
@@ -61,11 +64,21 @@
 - name: flush handlers
   meta: flush_handlers
 
-- name: enable and check k0s service
+- name: start k0s worker
   become: true
   systemd:
     name: k0sworker
     state: started
     enabled: true
+  register: k0sworker_started
 
+- name: wait for kublet on port 10250
+  wait_for:
+    host: localhost
+    port: 10250
+    delay: 15
+    timeout: 180
+  when:
+    - k0sworker_started.changed or
+      not k0sworker_started.state == "started"
 ...

@@ -1,19 +1,56 @@
 ---
 
+- name: cluster members
+  delegate_to: localhost
+  run_once: true
+  debug:
+    msg:
+      - "controllers : {{ k0s_cluster_nodes | k0s_cluster_members('controller') | join(', ') }}"
+      - "workers     : {{ k0s_cluster_nodes | k0s_cluster_members('workers') | join(', ') }}"
+
+- name: detect installed k0s binary
+  stat:
+    path: "{{ k0s_install_path }}/k0s"
+  register: stat_k0s_binary
+
 - name: reset full k0s config and data_dir
   k0s_reset:
     data_dir: "{{ k0s_data_dir }}"
     config: "{{ k0s_config_dir }}/k0s.yaml"
-  register: k0s_reset
+  register: _k0s_reset
+  when:
+    - stat_k0s_binary.stat.exists
+  tags:
+    - k0s_reset
+
+- name: remove directories
+  file:
+    state: absent
+    path: "{{ item }}"
+  loop:
+    - "{{ k0s_config_dir }}"
+    - "{{ k0s_data_dir }}"
+    - "{{ k0s_libexec_dir }}"
+    - "{{ k0s_install_path }}"
+    - /usr/bin/k0s
+    - /etc/ansible/facts.d/k0s.fact
 
 - name: reboot nodes
+  when:
+    - k0s_force
+    - _k0s_reset is defined
+    - _k0s_reset.rc is defined
+    - _k0s_reset.rc == 0
+  tags:
+    - k0s_reset
   block:
     - name: reboot server
-      command: sleep 2 && reboot
+      shell: |
+        sleep 2 && reboot
       failed_when: false
       changed_when: false
       async: 1
-      poll: 0
+      poll: 5
 
     - name: wait for the reboot to complete if there was a change.
       wait_for_connection:
@@ -21,15 +58,10 @@
         sleep: 5
         delay: 5
         timeout: 300
-  when:
-    - k0s_force
-    - k0s_reset.rc == 0
-
-- name: set k0s_force to false
-  set_fact:
-    k0s_force: false
 
 - name: reload facts
   setup:
+  tags:
+    - k0s_reset
 
 ...

@@ -30,45 +30,6 @@
         force: "{{ k0s_force }}"
         data_dir: "{{ k0s_data_dir }}"
         config_file: "{{ k0s_config_dir }}/k0s.yaml"
-        # config_overwrites: "{{ k0s_config | default({}) }}"
       register: default_k0s_config
-
-    # move to k0s_config
-    # - name: write the custom k0s config file
-    #   become: true
-    #   template:
-    #     src: k0s/k0s.yml.j2
-    #     dest: "{{ k0s_config_dir }}/k0s.yaml"
-    #     mode: 0660
-    #   when:
-    #     - k0s_use_custom_config
-
-- name: find k0s config file on initial controller ({{ k0s_data_dir }}/pki/admin.conf)
-  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-  stat:
-    path: "{{ k0s_data_dir }}/pki/admin.conf"
-    get_md5: false
-    get_mime: false
-    get_attributes: false
-  register: __stat_controller_k0s_conf
-  #changed_when:
-  #  - not __stat_controller_k0s_conf.stat.exists | default('false')
-
-- name: d
-  debug:
-    msg: "{{ __stat_controller_k0s_conf.stat }}"
-
-- name: create local facts
-  template:
-    src: ansible_facts.j2
-    dest: /etc/ansible/facts.d/k0s.fact
-    mode: 0755
-
-- name: update facts to get latest information
-  setup:
-    gather_subset:
-      - '!all'
-      - '!any'
-      - facter
 
 ...

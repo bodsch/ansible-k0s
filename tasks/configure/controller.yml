@@ -11,13 +11,13 @@
     state: controller
     data_dir: "{{ k0s_data_dir }}"
   register: controller_k0s_state
-  # run_once: true
 
 - name: register controller
   when:
     - controller_k0s_state is defined
     - controller_k0s_state.state is defined
-    - controller_k0s_state.state != "installed"
+    - controller_k0s_state.state == "missing" or
+      not controller_k0s_state.version
   block:
     - name: create controller join token
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
@@ -85,18 +85,25 @@
 - name: flush handlers
   meta: flush_handlers
 
-- name: enable and check k0s service
-  become: true
+# - name: Wait until the process is finished and {{ k0s_data_dir }}/pki/admin.conf was created
+#   ansible.builtin.wait_for:
+#     path: "{{ k0s_data_dir }}/pki/admin.conf"
+#     state: present
+
+- name: start k0s controller
   service:
     name: k0scontroller
-    # state: restarted
-    enabled: true
+    state: started
+  register: k0scontroller_started
 
-# - name: wait for k8s apiserver
-#   wait_for:
-#     host: localhost
-#     port: 6443
-#     delay: 15
-#     timeout: 180
+- name: wait for k8s apiserver on port 6443
+  wait_for:
+    host: localhost
+    port: 6443
+    delay: 15
+    timeout: 180
+  when:
+    - k0scontroller_started.changed or
+      not k0scontroller_started.state == "started"
 
 ...

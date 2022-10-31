@@ -53,43 +53,25 @@
     remote_src: true
     mode: 0644
   when:
-    # - k0s_admin_conf.stat is defined
-    # - k0s_admin_conf.stat.checksum is defined
-    # - k0s_kubeconfig is defined
-    # - k0s_kubeconfig.stat is defined
-    # - k0s_kubeconfig.stat.checksum is defined
     - k0s_kubeconfig.stat.checksum | default('X') != k0s_admin_conf.stat.checksum | default('x')
-    # - not k0s_kubeconfig.stat.exists | default('false')
 
-- name:
-  block:
-    # - name: get checksum of k0s kubeconfig file on ansible controller
-    #   delegate_to: localhost
-    #   become: false
-    #   stat:
-    #     path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
-    #     get_md5: false
-    #     get_mime: false
-    #     get_attributes: false
-    #   register: k0s_kubeconfig
+- name: read kubeconfig
+  delegate_to: localhost
+  become: false
+  slurp:
+    src: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
+  register: k0s_kubeconfig_content
 
-    - name: read kubeconfig
-      delegate_to: localhost
-      become: false
-      slurp:
-        src: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
-      register: k0s_kubeconfig_content
-
-    - name: set controller IP in kubeconfig
-      delegate_to: localhost
-      become: false
-      replace:
-        path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
-        regexp: 'localhost'
-        replace: "{{ ansible_default_ipv4.address }}"
-      when:
-        - k0s_kubeconfig_content is defined
-        - k0s_kubeconfig_content.content is defined
-        - not k0s_kubeconfig_content.content | b64decode | from_yaml | k8s_cluster_url(ansible_default_ipv4.address)
+- name: set controller IP in kubeconfig
+  delegate_to: localhost
+  become: false
+  replace:
+    path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
+    regexp: 'localhost'
+    replace: "{{ ansible_default_ipv4.address }}"
+  when:
+    - k0s_kubeconfig_content is defined
+    - k0s_kubeconfig_content.content is defined
+    - not k0s_kubeconfig_content.content | b64decode | from_yaml | k8s_cluster_url(ansible_default_ipv4.address)
 
 ...
