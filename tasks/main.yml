@@ -1,23 +1,16 @@
 ---
 
 - name: prepare
-  include_tasks: prepare.yml
+  ansible.builtin.import_tasks: prepare.yml
   tags:
     - k0s_prepare
+    - k0s_reset
     - k0s_download
     - k0s_install
     - k0s_configure
 
-- name: reset k0s
-  include_tasks: reset.yml
-  when:
-    - k0s_force is defined
-    - k0s_force
-  tags:
-    - k0s_prepare
-
 - name: download binary
-  include_tasks: download.yml
+  ansible.builtin.import_tasks: download.yml
   when:
     - not stat_k0s_binary.stat.exists
   tags:
@@ -25,18 +18,18 @@
     - k0s_install
 
 - name: install
-  include_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
   tags:
     - k0s_download
     - k0s_install
 
 - name: configure k0s
-  include_tasks: configure/main.yml
+  ansible.builtin.import_tasks: configure/main.yml
   tags:
     - k0s_configure
 
 - name: configure initial cluster k0s controller
-  include_tasks: configure/initial_controller.yml
+  ansible.builtin.import_tasks: configure/initial_controller.yml
   when:
     - ansible_hostname == k0s_cluster_nodes.initial_controller or
       ansible_fqdn == k0s_cluster_nodes.initial_controller
@@ -44,7 +37,7 @@
     - k0s_initial_controller
 
 - name: configure k0s controller
-  include_tasks: configure/controller.yml
+  ansible.builtin.import_tasks: configure/controller.yml
   when:
     - k0s_cluster_nodes.controllers | count > 0
     - ansible_hostname in k0s_cluster_nodes.controllers or
@@ -53,7 +46,7 @@
     - k0s_controller
 
 - name: configure k0s worker
-  include_tasks: configure/worker.yml
+  ansible.builtin.import_tasks: configure/worker.yml
   when:
     - k0s_cluster_nodes.workers | count > 0
     - ansible_hostname in k0s_cluster_nodes.workers or
@@ -62,22 +55,29 @@
     - k0s_worker
 
 - name: service
-  include_tasks: service.yml
+  ansible.builtin.import_tasks: service.yml
   tags:
     - k0s_service
 
-- name: finalize
-  include_tasks: finalize.yml
-  when:
-    - ansible_hostname == k0s_cluster_nodes.initial_controller or
-      ansible_fqdn == k0s_cluster_nodes.initial_controller
+- name: create facts
+  ansible.builtin.import_tasks: facts.yml
   tags:
-    - k0s_finalize
+    - k0s_initial_controller
 
-- name: print kubeconfig command
-  debug:
-    msg: "To use Cluster: 'export KUBECONFIG={{ k0s_artifacts_dir }}/k0s-kubeconfig.yml'"
-  run_once: true
+- name: finalize
   tags:
     - k0s_finalize
+  block:
+    - name: run finalize
+      ansible.builtin.import_tasks: finalize.yml
+      when:
+        - ansible_hostname == k0s_cluster_nodes.initial_controller or
+          ansible_fqdn == k0s_cluster_nodes.initial_controller
+
+    - name: print kubeconfig command
+      ansible.builtin.debug:
+        msg: "To use Cluster: 'export KUBECONFIG={{ k0s_artifacts_dir }}/k0s-kubeconfig.yml'"
+      run_once: true
+      #tags:
+      #  - k0s_finalize
 ...

@@ -4,14 +4,16 @@
   become: false
   delegate_to: "{{ k0s_delegate_to }}"
   run_once: "{{ 'false' if k0s_direct_download else 'true' }}"
-  stat:
+  ansible.builtin.stat:
     path: "{{ k0s_local_tmp_directory }}/k0s"
   register: stat_file_binary
 
 - name: propagate k0s
+  when:
+    - stat_file_binary.stat.exists
   block:
     - name: propagate k0s binaries
-      copy:
+      ansible.builtin.copy:
         src: "{{ k0s_local_tmp_directory }}/k0s"
         dest: "{{ k0s_install_path }}/"
         mode: 0755
@@ -20,21 +22,33 @@
         remote_src: "{{ 'true' if k0s_direct_download else 'false' }}"
 
     - name: make files executable
-      file:
+      ansible.builtin.file:
         path: "{{ k0s_install_path }}/k0s"
         mode: 0755
         owner: "{{ k0s_system_user }}"
         group: "{{ k0s_system_group }}"
 
-  when:
-    - stat_file_binary.stat.exists
-
 - name: create link to binary
-  file:
+  ansible.builtin.file:
     src: "{{ k0s_install_path }}/k0s"
     dest: "/usr/bin/k0s"
     state: link
     force: true
     follow: false
+
+- name: bash completion
+  when:
+    - k0s_enable_complition is defined
+    - k0s_enable_complition
+  block:
+    - name: create directory
+      ansible.builtin.file:
+        state: directory
+        mode: 0755
+        path: /etc/bash_completion.d
+
+    - name: install shell completion
+      k0s_completion:
+        shell: bash
 
 ...

@@ -20,6 +20,7 @@ class FilterModule(object):
             'group_members': self.group_members,
             'remove_group_members': self.remove_group_members,
             'k8s_cluster_url': self.k8s_cluster_url,
+            'k0s_cluster_members': self.k0s_cluster_members,
         }
 
     def group_members(self, data, lookup):
@@ -81,7 +82,6 @@ class FilterModule(object):
         """
 
         """
-        # display.v("- {} ({})".format(data, type(data)))
         re_filter = "^(http[s]?://)(?P<host>.*).*:(?P<port>\\d.*)"
 
         clusters = data.get('clusters', [])
@@ -100,3 +100,45 @@ class FilterModule(object):
                 return True
 
         return False
+
+    def k0s_cluster_members(self, data, member):
+        """
+            return all cluster controller as list
+        """
+        # display.v(f"k0s_cluster_members(self, {data}, {member})")
+
+        result = []
+
+        initial_controller = data.get("initial_controller", None)
+        controllers = data.get("controllers", [])
+        workers = data.get("workers", [])
+
+        # display.v(f" - {initial_controller}")
+        # display.v(f" - {controllers}")
+        # display.v(f" - {workers}")
+
+        if member == 'controller':
+            if initial_controller:
+                result.append(initial_controller)
+                result += controllers
+            else:
+                display.v("missing initial controller.")
+                return []
+
+        if member == 'workers':
+            result += workers
+
+        if member == 'all':
+            if initial_controller:
+                result.append(initial_controller)
+                result += controllers
+                result += workers
+            else:
+                display.v("missing initial controller.")
+                return []
+
+        result = [x for x in result if x]
+
+        display.v(f" = result {result}")
+
+        return result

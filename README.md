@@ -19,16 +19,13 @@ Similar to [movd/k0s-ansible](https://github.com/movd/k0s-ansible), **but** bett
 
 ## Why better?
 
-This Ansible role can be used atomically.
+This Ansible role can be used atomically.  
 If no changes are necessary, none will be made.
 
-Avoid `command` calls.
+Avoid `command` calls.  
 Wherever possible, separate Ansible modules are used for this.
 
 One role for all cases.
-
-Soon also available via ansible-galaxy
-
 
 
 ## supported Operating systems
@@ -42,48 +39,80 @@ Tested on
 ## usage
 
 ```yaml
-k0s_version: 1.23.6+k0s.1
+k0s_version: 1.25.2+k0s.0
 k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 
 k0s_system_user: "{{ ansible_user }}"
 k0s_system_group: "{{ ansible_user }}"
+
+k0s_config_dir: /etc/k0s
+k0s_data_dir: /var/lib/k0s
+k0s_libexec_dir: /usr/libexec/k0s
+
+k0s_direct_download: false
 
 k0s_cluster_nodes:
   initial_controller: ""
   controllers: []
   workers: []
 
-k0s_config_dir: /etc/k0s
-k0s_data_dir: /var/lib/k0s
-k0s_libexec_dir: /usr/libexec/k0s
+k0s_extra_arguments:
+  controller:
+    - --enable-metrics-scraper
+
+k0s_config: {}
 
 k0s_token_expiry: "1h"
-
-k0s_use_custom_config: false
-
-k0s_direct_download: false
 
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 ```
 
-### tags
+### `k0s_config`
 
-- `k0s_configure`
-- `k0s_controller`
-- `k0s_download`
-- `k0s_initial_configure`
-- `k0s_install`
-- `k0s_prepare`
-- `k0s_service`
-- `k0s_worker`
+Extension of the automatically created `k0s.yaml`
+The structure must correspond to the created configuration. An example file can be viewed [here](./k0s_example.yaml).
 
-### kubectl
 
-```bash
-export ...
+### single controller
 
+```yaml
+k0s_cluster_nodes:
+  initial_controller: controller-1.k0s.local
+  controllers: []
+  workers: []
 ```
 
+
+### one controller with multi workers
+
+```yaml
+k0s_cluster_nodes:
+  initial_controller: controller-1.k0s.local
+  controllers: []
+  workers:
+    - worker-1.k0s.local
+    - worker-2.k0s.local
+    - worker-3.k0s.local
+```
+
+### multi controllers with multi workers
+
+```yaml
+k0s_cluster_nodes:
+  initial_controller: controller-1.k0s.local
+  controllers:
+    - controller-2.k0s.local
+    - controller-3.k0s.local
+  workers:
+    - worker-1.k0s.local
+    - worker-2.k0s.local
+    - worker-3.k0s.local
+```
+
+### working implementation
+
+The example of a working implementation can be viewed at [GitLab](https://gitlab.com/kubernetes-cluser).  
+A suitable infrastructure based on KVM and Terraform can be created in the repository.
 
 
 ## Contribution
@@ -102,4 +131,7 @@ If you want to use something stable, please use a [Tagged Version](https://gitla
 - [Moritz](https://github.com/movd)
 
 
+## other dokumentaions
+
+[Upgrading a k0s cluster in-place from single-master to HA](https://vadosware.io/post/upgrading-a-k0s-cluster-from-single-to-ha/#get-all-your-workloads-off-the-current-master-controllerworker-role-node)
 

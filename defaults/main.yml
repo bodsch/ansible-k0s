@@ -1,44 +1,30 @@
 ---
 
-k0s_version: 1.23.7+k0s.0
+k0s_version: 1.25.2+k0s.0
 k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 
 k0s_system_user: "{{ ansible_user }}"
 k0s_system_group: "{{ ansible_user }}"
+
+k0s_config_dir: /etc/k0s
+k0s_data_dir: /var/lib/k0s
+k0s_libexec_dir: /usr/libexec/k0s
+
+k0s_direct_download: false
 
 k0s_cluster_nodes:
   initial_controller: ""
   controllers: []
   workers: []
 
-k0s_config_dir: /etc/k0s
-k0s_data_dir: /var/lib/k0s
-k0s_libexec_dir: /usr/libexec/k0s
+k0s_extra_arguments:
+  controller:
+    - --enable-metrics-scraper
 
 k0s_token_expiry: "1h"
 
-k0s_worker_on_controller: false
-
-k0s_force: false
-
-k0s_use_custom_config: false
-
-k0s_direct_download: false
-
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 
-# Kubernetes cluster network
-k0s_network: {}
-#   pod:
-#     network_cidr: 10.244.0.0/16
-#   service:
-#     ip_range: 10.96.0.0/12
-#     node_port_range: 30000-32767
-#   api:
-#     service_ip: 10.96.0.1
-#   cluster:
-#     subnet: 10.96.0
-#     dns_ip: 10.96.0.10
-#     domain_name: cluster.local
+k0s_config: {}
 
 ...

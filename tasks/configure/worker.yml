@@ -1,31 +1,37 @@
 ---
 
 - name: configure workers
-  debug:
+  ansible.builtin.debug:
     msg:
       - "{{ k0s_cluster_nodes.workers | join(', ') }}"
   run_once: true
 
 - name: get k0s state
   k0s_status:
+    state: worker
     data_dir: "{{ k0s_data_dir }}"
   register: worker_k0s_state
-  run_once: true
+  # run_once: true
 
 - name: install worker
+  when:
+    - worker_k0s_state is defined
+    - worker_k0s_state.state is defined
+    - worker_k0s_state.state == "missing" or
+      not worker_k0s_state.version
   block:
     - name: create worker join token
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+      run_once: true
       k0s_token:
         state: create
         role: worker
         expiry: "{{ k0s_token_expiry }}"
         data_dir: "{{ k0s_data_dir }}"
       register: worker_join_token
-      run_once: true
 
     - name: store worker join token
-      set_fact:
+      ansible.builtin.set_fact:
         join_token_worker: "{{ worker_join_token.token }}"
         cacheable: true
       when:
@@ -33,10 +39,10 @@
         - worker_join_token.token is defined
 
     - name: reload facts
-      setup:
+      ansible.builtin.setup:
 
     - name: write the k0s token file on worker
-      template:
+      ansible.builtin.template:
         src: k0s/worker-token.j2
         dest: "{{ k0s_token_files.worker }}"
         owner: "{{ ansible_user }}"
@@ -54,17 +60,27 @@
         - daemon-reload
         - restart k0s_worker
       register: install_worker_cmd
-  when:
-    - not worker_k0s_state.state == "installed"
 
 - name: flush handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
-- name: enable and check k0s service
+- name: start k0s worker
   become: true
-  systemd:
+  ansible.builtin.service:
     name: k0sworker
     state: started
     enabled: true
+  register: k0sworker_started
+  notify:
+    - wait for kublet on port 10250
 
+# - name: wait for kublet on port 10250
+#   ansible.builtin.wait_for:
+#     host: localhost
+#     port: 10250
+#     delay: 15
+#     timeout: 180
+#   when:
+#     - k0sworker_started.changed or
+#       not k0sworker_started.state == "started"
 ...

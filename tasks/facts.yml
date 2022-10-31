@@ -1,0 +1,33 @@
+---
+
+- name: Wait until the process is finished and {{ k0s_data_dir }}/pki/admin.conf was created
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  run_once: true
+  ansible.builtin.wait_for:
+    path: "{{ k0s_data_dir }}/pki/admin.conf"
+    state: present
+
+- name: find k0s config file on initial controller ({{ k0s_data_dir }}/pki/admin.conf)
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  run_once: true
+  ansible.builtin.stat:
+    path: "{{ k0s_data_dir }}/pki/admin.conf"
+    get_md5: false
+    get_mime: false
+    get_attributes: false
+  register: __stat_controller_k0s_conf
+
+- name: create local facts
+  ansible.builtin.template:
+    src: ansible_facts.j2
+    dest: /etc/ansible/facts.d/k0s.fact
+    mode: 0755
+
+- name: update facts to get latest information
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - '!any'
+      - facter
+
+...

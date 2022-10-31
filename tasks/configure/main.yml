@@ -1,7 +1,7 @@
 ---
 
 - name: configure nodes
-  debug:
+  ansible.builtin.debug:
     msg:
       - "{{ k0s_cluster_nodes }}"
       - "{{ ansible_hostname }}"
@@ -10,7 +10,7 @@
 
 - name: create k0s directories
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: 0755
@@ -20,52 +20,17 @@
     - "{{ k0s_libexec_dir }}"
 
 - name: handle k0s config file
+  when:
+    - ansible_hostname in k0s_cluster_nodes | k0s_cluster_members('controller') or
+      ansible_fqdn in k0s_cluster_nodes | k0s_cluster_members('controller')
   block:
     - name: create default k0s config
       k0s_config:
         state: create
         force: "{{ k0s_force }}"
         data_dir: "{{ k0s_data_dir }}"
-        config: "{{ k0s_config_dir }}/k0s.yaml"
+        config_file: "{{ k0s_config_dir }}/k0s.yaml"
+        config_overwrites: "{{ k0s_config | default({}) }}"
       register: default_k0s_config
-      when:
-        - not k0s_use_custom_config
-
-    - name: write the custom k0s config file
-      become: true
-      template:
-        src: k0s/k0s.yml.j2
-        dest: "{{ k0s_config_dir }}/k0s.yaml"
-        mode: 0660
-      when:
-        - k0s_use_custom_config
-
-  when:
-    - ansible_hostname == k0s_cluster_nodes.initial_controller or
-      ansible_fqdn == k0s_cluster_nodes.initial_controller
-
-- name: find k0s config file on initial controller
-  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-  stat:
-    path: "{{ k0s_data_dir }}/pki/admin.conf"
-    get_md5: false
-    get_mime: false
-    get_attributes: false
-  register: __stat_controller_k0s_conf
-  changed_when:
-    - not __stat_controller_k0s_conf.stat.exists | default('false')
-
-- name: create local facts
-  template:
-    src: ansible_facts.j2
-    dest: /etc/ansible/facts.d/k0s.fact
-    mode: 0755
-
-- name: update facts to get latest information
-  setup:
-    gather_subset:
-      - '!all'
-      - '!any'
-      - facter
 
 ...
