@@ -6,7 +6,7 @@
 
 from __future__ import absolute_import, division, print_function
 import os
-import json
+# import json
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -66,12 +66,11 @@ class K0sCompletion(object):
         _cmd = None
         _msg = "initial call"
 
-
         if self.shell == "bash" and os.path.isfile(self.bash_completion_file):
             return dict(
-                failed = False,
-                changed = False,
-                msg = "bash completion already created."
+                failed=False,
+                changed=False,
+                msg="bash completion already created."
             )
 
         args = []
@@ -104,9 +103,9 @@ class K0sCompletion(object):
                     file.close()
 
                     return dict(
-                        failed = False,
-                        changed = False,
-                        msg = "bash completion successfully written."
+                        failed=False,
+                        changed=False,
+                        msg="bash completion successfully written."
                     )
             elif self.shell == "zsh":
                 # TODO

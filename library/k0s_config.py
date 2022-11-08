@@ -6,7 +6,7 @@
 
 from __future__ import absolute_import, division, print_function
 import os
-import json
+# import json
 import yaml
 
 from ansible.module_utils.basic import AnsibleModule
@@ -198,7 +198,7 @@ class K0sConfig(object):
                 data = self._rec_merge(data, self.config_overwrites)
 
                 with open(self.config_file, 'w') as file:
-                    documents = yaml.dump(data, file)
+                    _ = yaml.dump(data, file)
 
     def _rec_merge(self, d1, d2):
         '''
