@@ -142,6 +142,7 @@ class K0sInstall(object):
             _failed = False
             _changed = True
             _msg = _msg
+            _cmd = " ".join(args)
         else:
             return dict(
                 rc=rc,
@@ -151,6 +152,7 @@ class K0sInstall(object):
             )
 
         return dict(
+            rc = rc,
             failed=_failed,
             changed=_changed,
             cmd=_cmd,
