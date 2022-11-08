@@ -23,3 +23,5 @@ ignore: |
   .travis.yml
   .tox/
   .github/
+  k0s_example.yaml
+  templates/k0s/k0s_1.25.2.yml
