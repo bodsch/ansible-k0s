@@ -12,6 +12,8 @@ k0s_libexec_dir: /usr/libexec/k0s
 
 k0s_direct_download: false
 
+k0s_force: false
+
 k0s_cluster_nodes:
   initial_controller: ""
   controllers: []
