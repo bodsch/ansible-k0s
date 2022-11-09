@@ -92,20 +92,20 @@ def test_directories(host, get_vars):
     data_directory = get_vars.get("k0s_data_dir", None)
 
     dirs = [
-        "{0}/bin",
-        "{0}/pki",
+        # f"{data_directory}/bin",
+        f"{data_directory}/pki",
     ]
 
     for directory in dirs:
-        d = host.file(directory.format(data_directory))
+        d = host.file(directory)
         assert d.is_directory
 
 
-def test_listen_socket(host, get_vars):
-    """
-        test sockets
-    """
-    for i in host.socket.get_listening_sockets():
-        print(i)
-
-    assert host.socket("unix:///run/k0s/status.sock").is_listening
+# def test_listen_socket(host, get_vars):
+#     """
+#         test sockets
+#     """
+#     for i in host.socket.get_listening_sockets():
+#         print(i)
+#
+#     assert host.socket("unix:///run/k0s/status.sock").is_listening

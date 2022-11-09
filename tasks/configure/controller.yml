@@ -4,7 +4,6 @@
   ansible.builtin.debug:
     msg:
       - "{{ k0s_cluster_nodes.controllers | join(', ') }}"
-  run_once: true
 
 - name: get k0s state
   k0s_status:
@@ -14,14 +13,10 @@
 
 - name: register controller
   when:
-    - controller_k0s_state is defined
-    - controller_k0s_state.state is defined
-    - controller_k0s_state.state == "missing" or
-      not controller_k0s_state.version
+    - not controller_k0s_state.state | default('missing') | string == "installed"
   block:
     - name: create controller join token
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-      run_once: true
       k0s_token:
         state: create
         role: controller
@@ -29,9 +24,16 @@
         data_dir: "{{ k0s_data_dir }}"
       register: controller_join_token
 
+    - name: fail when no token returned
+      fail:
+        msg: "missing token to join controllers"
+      when:
+        - not controller_join_token is defined or
+          not controller_join_token.token is defined
+
     - name: store controller join token
       ansible.builtin.set_fact:
-        join_token_controller: "{{ controller_join_token.token }}"
+        _join_token_controller: "{{ controller_join_token.token }}"
         cacheable: true
       when:
         - controller_join_token is defined
@@ -60,6 +62,25 @@
         - daemon-reload
         - restart k0s_controller
       register: install_controller_cmd
+  rescue:
+    - name: reset full k0s config and data_dir
+      k0s_reset:
+        data_dir: "{{ k0s_data_dir }}"
+        config: "{{ k0s_config_dir }}/k0s.yaml"
+      register: _k0s_reset
+      when:
+        - stat_k0s_binary.stat.exists
+      tags:
+        - k0s_reset
+
+    - name: clean up the mess
+      file:
+        path: "{{ k0s_config_dir }}/k0s.yaml"
+        state: absent
+
+    - name: exit with fail
+      fail:
+        msg: "Error while join controllers!"
 
 - name: arm specific systemd drop-in
   when:
@@ -97,15 +118,5 @@
   register: k0scontroller_started
   notify:
     - wait for k8s apiserver
-
-# - name: wait for k8s apiserver on port 6443
-#   ansible.builtin.wait_for:
-#     host: localhost
-#     port: 6443
-#     delay: 15
-#     timeout: 180
-#   when:
-#     - k0scontroller_started.changed or
-#       not k0scontroller_started.state == "started"
 
 ...

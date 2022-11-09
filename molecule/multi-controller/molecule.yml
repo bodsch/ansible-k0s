@@ -19,7 +19,7 @@ platforms:
     privileged: true
     pre_build_image: true
     capabilities:
-      - SYS_ADMIN
+      - ALL
     tmpfs:
       - /run
       - /tmp
@@ -27,12 +27,15 @@ platforms:
       - k0s
       - k0s_initial_controller
     volumes:
-      - /tmp/molecule/k0s/controller:/opt
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /lib/modules:/lib/modules:ro
+      # needs only by ubuntu 20.04
+      # - /var/lib/docker/overlay2:/var/lib/docker/overlay2:Z
     network_mode: default
     docker_networks:
       - name: k8s
         ipam_config:
-          - subnet: "10.20.0.0/16"
+          - subnet: "10.20.0.0/24"
             gateway: "10.20.0.1"
     networks:
       - name: k8s
@@ -45,12 +48,16 @@ platforms:
     privileged: true
     pre_build_image: true
     capabilities:
-      - SYS_ADMIN
+      - ALL
     tmpfs:
       - /run
       - /tmp
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /lib/modules:/lib/modules:ro
+      - /boot/config-4.19.0-21-cloud-amd64:/boot/config-4.19.0-21-cloud-amd64:ro
+      # needs only by ubuntu 20.04
+      # - /var/lib/docker/overlay2:/var/lib/docker/overlay2:Z
     groups:
       - k0s
       - k0s_controllers
@@ -58,42 +65,6 @@ platforms:
       - name: k8s
         ipv4_address: "10.20.0.11"
 
-  # - name: k0s-controller-3
-  #   image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
-  #   command: ${MOLECULE_DOCKER_COMMAND:-""}
-  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-  #   privileged: true
-  #   pre_build_image: true
-  #   capabilities:
-  #     - SYS_ADMIN
-  #   tmpfs:
-  #     - /run
-  #     - /tmp
-  #   volumes:
-  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  #   groups:
-  #     - k0s
-  #     - k0s_controllers
-  #   networks:
-  #     - name: k8s
-  #       ipv4_address: "10.20.0.12"
-  #
-  # - name: k0s-worker-1
-  #   image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
-  #   command: ${MOLECULE_DOCKER_COMMAND:-""}
-  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-  #   privileged: true
-  #   pre_build_image: true
-  #   capabilities:
-  #     - SYS_ADMIN
-  #   volumes:
-  #     - /tmp/molecule/k0s/worker-1:/opt:rw
-  #   groups:
-  #     - k0s
-  #     - k0s_workers
-  #   networks:
-  #     - name: k8s
-  #       ipv4_address: "10.20.0.31"
 
 provisioner:
   name: ansible

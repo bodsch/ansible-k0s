@@ -71,15 +71,4 @@
   notify:
     - wait for k8s apiserver
 
-# - name: wait for k8s apiserver on port 6443
-#   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
-#   ansible.builtin.wait_for:
-#     host: localhost
-#     port: 6443
-#     delay: 15
-#     timeout: 180
-#   when:
-#     - k0scontroller_started.changed or
-#       not k0scontroller_started.state == "started"
-
 ...

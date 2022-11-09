@@ -152,7 +152,7 @@ class K0sInstall(object):
             )
 
         return dict(
-            rc = rc,
+            rc=rc,
             failed=_failed,
             changed=_changed,
             cmd=_cmd,

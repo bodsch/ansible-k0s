@@ -36,6 +36,25 @@ Tested on
 * Debian based
     - Debian 10 / 11
 
+
+## working implementation
+
+The example of a working implementation can be viewed at [GitLab](https://gitlab.com/kubernetes-cluser).  
+A suitable infrastructure based on KVM and Terraform can be created in the repository.
+
+
+## Contribution
+
+Please read [Contribution](CONTRIBUTING.md)
+
+
+## Development,  Branches (Git Tags)
+
+The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
+
+If you want to use something stable, please use a [Tagged Version](https://gitlab.com/bodsch/ansible-k0s/-/tags)!
+
+
 ## usage
 
 ```yaml
@@ -109,27 +128,9 @@ k0s_cluster_nodes:
     - worker-3.k0s.local
 ```
 
-### working implementation
-
-The example of a working implementation can be viewed at [GitLab](https://gitlab.com/kubernetes-cluser).  
-A suitable infrastructure based on KVM and Terraform can be created in the repository.
-
-
-## Contribution
-
-Please read [Contribution](CONTRIBUTING.md)
-
-
-## Development,  Branches (Git Tags)
-
-The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
-
-If you want to use something stable, please use a [Tagged Version](https://gitlab.com/bodsch/ansible-k0s/-/tags)!
-
 ## Credits
 
 - [Moritz](https://github.com/movd)
-
 
 ## other dokumentaions
 
