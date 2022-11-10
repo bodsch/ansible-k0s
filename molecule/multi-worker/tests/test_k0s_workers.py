@@ -95,11 +95,6 @@ def test_directories(host, get_vars):
         "{0}/containerd",
         "{0}/images",
         "{0}/kubelet",
-        "{0}/kubelet/pki",
-        "{0}/kubelet/plugins",
-        "{0}/kubelet/plugins_registry",
-        "{0}/kubelet/pod-resources",
-        "{0}/kubelet/pods",
     ]
 
     for directory in dirs:
@@ -115,19 +110,9 @@ def test_files(host, get_vars):
     files = [
         "{0}/bin/containerd",
         "{0}/bin/containerd-shim",
-        "{0}/bin/containerd-shim-runc-v1",
-        "{0}/bin/containerd-shim-runc-v2",
-        "{0}/bin/ip6tables",
-        "{0}/bin/ip6tables-restore",
-        "{0}/bin/ip6tables-save",
-        "{0}/bin/iptables-restore",
-        "{0}/bin/iptables-save",
         "{0}/bin/kubelet",
         "{0}/bin/runc",
-        "{0}/bin/xtables-legacy-multi",
         "{0}/kubelet-bootstrap.conf",
-        "{0}/kubelet-config.yaml",
-        "{0}/kubelet.conf",
     ]
 
     for file in files:
@@ -143,39 +128,3 @@ def test_service(host):
 
     assert service.is_enabled
     assert service.is_running
-
-
-def test_listen(host, get_vars):
-    """
-        test sockets
-    """
-    listening = host.socket.get_listening_sockets()
-    interfaces = host.interface.names()
-    eth = []
-
-    if "eth0" in interfaces:
-        eth = host.interface("eth0").addresses
-
-    for i in listening:
-        print(i)
-
-    for i in interfaces:
-        print(i)
-
-    for i in eth:
-        print(i)
-
-    # kube-router
-    # assert host.socket("tcp://0.0.0.0:8080").is_listening
-    # assert host.socket("tcp://0.0.0.0:20244").is_listening
-    # assert host.socket("tcp://127.0.0.1:50051").is_listening
-    # assert host.socket("tcp://{0}:179".format(eth[0])).is_listening
-    # assert host.socket("tcp://{0}:50051".format(eth[0])).is_listening
-    # kubelet
-    assert host.socket("tcp://127.0.0.1:10248").is_listening
-    assert host.socket("tcp://0.0.0.0:10250").is_listening
-    # kube-proxy
-    assert host.socket("tcp://127.0.0.1:10249").is_listening
-    assert host.socket("tcp://0.0.0.0:10256").is_listening
-    # sockets
-    assert host.socket("unix:///run/k0s/containerd.sock").is_listening
