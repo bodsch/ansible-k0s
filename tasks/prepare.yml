@@ -73,9 +73,9 @@
   when:
     - k0s_direct_download
 
-- name: detect our installation path '{{ k0s_install_path | dirname }}'
+- name: detect our installation path '{{ k0s_install_bin_dir }}'
   ansible.builtin.stat:
-    path: "{{ k0s_install_path | dirname }}"
+    path: "{{ k0s_install_bin_dir | dirname }}"
     get_checksum: false
   register: stat_k0s_path
   ignore_errors: true
