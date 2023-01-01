@@ -10,6 +10,7 @@ k0s_config_dir: /etc/k0s
 k0s_data_dir: /var/lib/k0s
 k0s_libexec_dir: /usr/libexec/k0s
 k0s_install_bin_dir: /usr/local/bin/k0s
+k0s_bin_path: /usr/bin/k0s
 
 k0s_direct_download: false
 

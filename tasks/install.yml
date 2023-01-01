@@ -31,7 +31,7 @@
 - name: create link to binary
   ansible.builtin.file:
     src: "{{ k0s_install_path }}/k0s"
-    dest: "/usr/bin/k0s"
+    dest: "{{ k0s_bin_path }}"
     state: link
     force: true
     follow: false

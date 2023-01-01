@@ -32,7 +32,7 @@
     - "{{ k0s_data_dir }}"
     - "{{ k0s_libexec_dir }}"
     - "{{ k0s_install_path }}"
-    - /usr/bin/k0s
+    - "{{ k0s_bin_path }}"
     - /etc/ansible/facts.d/k0s.fact
 
 - name: reboot nodes
