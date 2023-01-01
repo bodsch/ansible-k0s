@@ -24,9 +24,6 @@ k0s_defaults_extra_arguments:
 
 k0s_defaults_config: {}
 
-_join_token_controller: ""
-_join_token_worker: ""
-
 go_arch_map:
   x86_64: 'amd64'
   aarch64: 'arm64'
