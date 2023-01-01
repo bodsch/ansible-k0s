@@ -4,12 +4,6 @@ k0s_main_version: "{{ k0s_version[0:6] }}"
 
 k0s_install_path: "{{ k0s_install_bin_dir }}/{{ k0s_main_version }}"
 
-k0s_delegate_to: localhost
-
-k0s_local_tmp_directory: "{{
-  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-  default(lookup('env', 'HOME') ~ '/.cache/ansible/k0s', true) }}/{{ k0s_main_version }}"
-
 k0s_requirements:
   - bash-completion
   - bridge-utils
