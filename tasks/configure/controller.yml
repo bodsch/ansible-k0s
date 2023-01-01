@@ -1,5 +1,4 @@
 ---
-
 - name: configure controllers
   ansible.builtin.debug:
     msg:
@@ -31,20 +30,10 @@
         - not controller_join_token is defined or
           not controller_join_token.token is defined
 
-    - name: store controller join token
-      ansible.builtin.set_fact:
-        _join_token_controller: "{{ controller_join_token.token }}"
-        cacheable: true
-      when:
-        - controller_join_token is defined
-        - controller_join_token.token is defined
-
-    - name: reload facts
-      ansible.builtin.setup:
-
     - name: write the k0s token file on controller
       ansible.builtin.template:
         src: k0s/controller-token.j2
+        content: "{{ controller_join_token.token }}"
         dest: "{{ k0s_token_files.controller }}"
         owner: "{{ k0s_system_user }}"
         group: "{{ k0s_system_group }}"

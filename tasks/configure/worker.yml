@@ -1,5 +1,4 @@
 ---
-
 - name: configure workers
   ansible.builtin.debug:
     msg:
@@ -31,20 +30,9 @@
         - not worker_join_token is defined or
           not worker_join_token.token is defined
 
-    - name: store worker join token
-      ansible.builtin.set_fact:
-        _join_token_controller: "{{ worker_join_token.token }}"
-        cacheable: true
-      when:
-        - worker_join_token is defined
-        - worker_join_token.token is defined
-
-    - name: reload facts
-      ansible.builtin.setup:
-
     - name: write the k0s token file on worker
-      ansible.builtin.template:
-        src: k0s/worker-token.j2
+      ansible.builtin.copy:
+        content: "{{ worker_join_token.token }}"
         dest: "{{ k0s_token_files.worker }}"
         owner: "{{ k0s_system_user }}"
         group: "{{ k0s_system_group }}"
