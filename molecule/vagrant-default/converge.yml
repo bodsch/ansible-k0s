@@ -1,0 +1,19 @@
+---
+
+- name: initial controller
+  hosts: k0s-controller
+  any_errors_fatal: true
+  gather_facts: true
+  become: true
+
+  roles:
+    - role: ansible-k0s
+
+- name: worker
+  hosts: k0s_workers
+  any_errors_fatal: true
+  gather_facts: true
+  become: true
+
+  roles:
+    - role: ansible-k0s
