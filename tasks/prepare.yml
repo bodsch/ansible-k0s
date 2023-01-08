@@ -57,7 +57,7 @@
       until: _latest_release.status == 200
       retries: 5
 
-    - name: set k0s version to {{ _latest_release.json.tag_name[1:] }}
+    - name: re-define k0s_version
       ansible.builtin.set_fact:
         k0s_version: "{{ _latest_release.json.tag_name[1:] }}"
 
@@ -106,6 +106,26 @@
     state: directory
     mode: 0750
   run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
+
+- name: user and group handling
+  when:
+    - k0s_system_user != "root"
+  block:
+    - name: create k0s group
+      ansible.builtin.group:
+        name: "{{ k0s_system_group }}"
+        state: present
+        system: true
+
+    - name: create k0s user
+      ansible.builtin.user:
+        name: "{{ k0s_system_user }}"
+        groups: "{{ k0s_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
 
 - name: create install directory
   ansible.builtin.file:

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+. hooks/_tox_base
+
+tox ${TOX_OPTS} -- molecule test ${TOX_ARGS}
