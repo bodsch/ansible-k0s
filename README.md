@@ -8,13 +8,15 @@ Use vanilla upstream Kubernetes distro [k0s](https://github.com/k0sproject/k0s).
 Similar to [movd/k0s-ansible](https://github.com/movd/k0s-ansible), **but** better (i think so ;) )
 
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/bodsch/ansible-k0s/CI)][ci]
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-k0s/main.yml?branch=main)][ci]
 [![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-k0s)][issues]
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-k0s)][releases]
+[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
 
 [ci]: https://github.com/bodsch/ansible-k0s/actions
 [issues]: https://github.com/bodsch/ansible-k0s/issues?q=is%3Aopen+is%3Aissue
 [releases]: https://github.com/bodsch/ansible-k0s/releases
+[quality]: https://galaxy.ansible.com/bodsch/k0s
 
 
 ## Why better?
@@ -39,8 +41,23 @@ Tested on
 
 ## working implementation
 
-The example of a working implementation can be viewed at [GitLab](https://gitlab.com/kubernetes-cluser).  
+The example of a working implementation can be viewed at [GitLab](https://gitlab.com/integration-tests/k0s).  
 A suitable infrastructure based on KVM and Terraform can be created in the repository.
+
+There are some tests in `molecule` that could be used.
+For reasons that are not clear to me, the tests in a docker container are not very meaningful.
+I have therefore extended the tests with the *Vagrant* driver.
+
+There is a `Makefile` to start the tests:
+
+```shell
+make test -e TOX_SCENARIO=multi-worker
+```
+
+
+```shell
+make test -e TOX_SCENARIO=vagrant-multi-worker
+```
 
 
 ## Contribution
@@ -52,7 +69,7 @@ Please read [Contribution](CONTRIBUTING.md)
 
 The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
 
-If you want to use something stable, please use a [Tagged Version](https://gitlab.com/bodsch/ansible-k0s/-/tags)!
+If you want to use something stable, please use a [Tagged Version](https://github.com/bodsch/ansible-k0s/tags)!
 
 
 ## usage

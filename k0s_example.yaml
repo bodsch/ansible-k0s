@@ -12,8 +12,8 @@ spec:
     k0sApiPort: 9443
     port: 6443
     sans:
-    - 172.17.0.2
-    - 10.20.0.10
+      - 172.17.0.2
+      - 10.20.0.10
     tunneledNetworkingMode: false
 
   controllerManager: {}

@@ -1,5 +1,4 @@
 ---
-
 dependency:
   name: galaxy
 
@@ -30,25 +29,55 @@ lint: |
   flake8 .
 
 platforms:
-  - name: k0s-controller
-    hostname: k0s-controller
+  # http://www.virtualbox.org/manual/ch08.html
+  # https://www.virtualbox.org/manual/ch08.html#vboxmanage-cmd-overview
+  - name: k0s-controller-1
+    hostname: k0s-controller-1
     memory: 1024
     cpus: 1
+    provider_options:
+      video_type: 'vga'
     interfaces:
       # `network_name` is the required identifier, other keys map to arguments.
       - network_name: private_network
-        ip: 192.168.56.20
+        ip: 192.168.56.10
+      - network_name: forwarded_port
+        guest: 6443
+        host: 6443
     # Dictionary of `config` options.
     config_options:
       vm.boot_timeout: 600
       ssh.keep_alive: yes
       ssh.remote_user: 'vagrant'
+    #instance_raw_config_args:
+    #  # - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
+    #  - 'vm.modifyvm :id, "--vram", "28"'
+    groups:
+      - k0s
+      - k0s_initial_controller
+
+  - name: k0s-controller-2
+    hostname: k0s-controller-2
+    memory: 1024
+    cpus: 1
+    provider_options:
+      video_type: 'vga'
+    interfaces:
+      - network_name: private_network
+        ip: 192.168.56.11
+    config_options:
+      vm.boot_timeout: 600
+      ssh.keep_alive: yes
+      ssh.remote_user: 'vagrant'
+    groups:
+      - k0s
+      - k0s_controllers
 
 provisioner:
   name: ansible
   ansible_args:
     - --diff
-    - -v
+    # - -v
   config_options:
     defaults:
       deprecation_warnings: True
@@ -57,6 +86,7 @@ provisioner:
 
 scenario:
   test_sequence:
+    - lint
     - destroy
     - dependency
     - syntax
@@ -68,3 +98,4 @@ scenario:
 
 verifier:
   name: testinfra
+

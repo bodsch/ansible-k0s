@@ -15,7 +15,7 @@
   when:
     - not worker_k0s_state.state | default('missing') | string == "installed"
   block:
-    - name: create worker join token
+    - name: create join token on initial controller
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
       k0s_token:
         state: create
@@ -25,13 +25,14 @@
       register: worker_join_token
 
     - name: fail when no token returned
-      fail:
+      ansible.builtin.fail:
         msg: "missing token to join workers"
       when:
         - not worker_join_token is defined or
-          not worker_join_token.token is defined
+          not worker_join_token.token is defined or
+          worker_join_token.token | string | length == 0
 
-    - name: store worker join token
+    - name: define join token for worker instances
       ansible.builtin.set_fact:
         _join_token_controller: "{{ worker_join_token.token }}"
         cacheable: true
@@ -42,12 +43,12 @@
     - name: reload facts
       ansible.builtin.setup:
 
-    - name: write the k0s token file on worker
+    - name: write the k0s token file on worker instances
       ansible.builtin.template:
-        src: k0s/worker-token.j2
+        src: k0s/controller-token.j2
         dest: "{{ k0s_token_files.worker }}"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ k0s_system_user }}"
+        group: "{{ k0s_system_user }}"
         mode: 0600
 
     - name: create k0s worker service with install command
@@ -70,12 +71,12 @@
       register: _k0s_reset
 
     - name: clean up the mess
-      file:
+      ansible.builtin.file:
         path: "{{ k0s_config_dir }}/k0s.yaml"
         state: absent
 
     - name: exit with fail
-      fail:
+      ansible.builtin.fail:
         msg: "Error while join workers!"
 
 - name: flush handlers

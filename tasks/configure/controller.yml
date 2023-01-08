@@ -25,7 +25,7 @@
       register: controller_join_token
 
     - name: fail when no token returned
-      fail:
+      ansible.builtin.fail:
         msg: "missing token to join controllers"
       when:
         - not controller_join_token is defined or
@@ -46,8 +46,8 @@
       ansible.builtin.template:
         src: k0s/controller-token.j2
         dest: "{{ k0s_token_files.controller }}"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ k0s_system_user }}"
+        group: "{{ k0s_system_user }}"
         mode: 0600
 
     - name: create k0s controller service with install command
@@ -74,12 +74,12 @@
         - k0s_reset
 
     - name: clean up the mess
-      file:
+      ansible.builtin.file:
         path: "{{ k0s_config_dir }}/k0s.yaml"
         state: absent
 
     - name: exit with fail
-      fail:
+      ansible.builtin.fail:
         msg: "Error while join controllers!"
 
 - name: arm specific systemd drop-in
