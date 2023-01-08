@@ -22,13 +22,13 @@ Similar to [movd/k0s-ansible](https://github.com/movd/k0s-ansible), **but** bett
 If `latest` is set for `k0s_version`, the role tries to install the latest release version.  
 **Please use this with caution, as incompatibilities between releases may occur!**
 
-The binaries are installed below `/usr/local/bin/k0s/${k0s_version}` and later linked to `/usr/bin`. 
+The binaries are installed below `/usr/local/bin/k0s/${k0s_version}` and later linked to `/usr/bin`.  
 This should make it possible to downgrade relatively safely.
 
 The k0s archive is stored on the Ansible controller, unpacked and then the binaries are copied to the target system.
-The cache directory can be defined via the environment variable `CUSTOM_LOCAL_TMP_DIRECTORY`. 
+The cache directory can be defined via the environment variable `CUSTOM_LOCAL_TMP_DIRECTORY`.  
 By default it is `${HOME}/.cache/ansible/k0s`.  
-If this type of installation is not desired, the download can take place directly on the target system. 
+If this type of installation is not desired, the download can take place directly on the target system.  
 However, this must be explicitly activated by setting `k0s_direct_download` to `true`.
 
 
