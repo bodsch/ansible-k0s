@@ -1,6 +1,6 @@
 ---
 
-k0s_version: 1.25.2+k0s.0
+k0s_version: 1.25.4+k0s.0
 k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 
 k0s_system_user: k0s
