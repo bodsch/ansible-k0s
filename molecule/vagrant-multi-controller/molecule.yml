@@ -1,0 +1,99 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: vagrant
+  provider:
+    # Can be any supported provider (virtualbox, parallels, libvirt, etc)
+    # Defaults to virtualbox
+    name: libvirt
+  # Run vagrant up with --provision.
+  # Defaults to --no-provision)
+  provision: no
+  # vagrant-cachier configuration
+  # Defaults to 'machine'
+  # Any value different from 'machine' or 'box' will disable it
+  cachier: machine
+  # If set to false, set VAGRANT_NO_PARALLEL to '1'
+  # Defaults to true
+  parallel: true
+  # vagrant box to use by default
+  # Defaults to 'generic/alpine316'
+  default_box: trombik/ansible-debian-11-amd64
+
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .
+  flake8 .
+
+platforms:
+  # http://www.virtualbox.org/manual/ch08.html
+  # https://www.virtualbox.org/manual/ch08.html#vboxmanage-cmd-overview
+  - name: k0s-controller-1
+    hostname: k0s-controller-1
+    memory: 1024
+    cpus: 1
+    provider_options:
+      video_type: 'vga'
+    interfaces:
+      # `network_name` is the required identifier, other keys map to arguments.
+      - network_name: private_network
+        ip: 192.168.56.10
+      - network_name: forwarded_port
+        guest: 6443
+        host: 6443
+    # Dictionary of `config` options.
+    config_options:
+      vm.boot_timeout: 600
+      ssh.keep_alive: yes
+      ssh.remote_user: 'vagrant'
+    #instance_raw_config_args:
+    #  # - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
+    #  - 'vm.modifyvm :id, "--vram", "28"'
+    groups:
+      - k0s
+      - k0s_initial_controller
+
+  - name: k0s-controller-2
+    hostname: k0s-controller-2
+    memory: 1024
+    cpus: 1
+    provider_options:
+      video_type: 'vga'
+    interfaces:
+      - network_name: private_network
+        ip: 192.168.56.11
+    config_options:
+      vm.boot_timeout: 600
+      ssh.keep_alive: yes
+      ssh.remote_user: 'vagrant'
+    groups:
+      - k0s
+      - k0s_controllers
+
+provisioner:
+  name: ansible
+  ansible_args:
+    - --diff
+    # - -v
+  config_options:
+    defaults:
+      deprecation_warnings: True
+      stdout_callback: yaml
+      callbacks_enabled: profile_tasks
+
+scenario:
+  test_sequence:
+    - destroy
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
+
+verifier:
+  name: testinfra

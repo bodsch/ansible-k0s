@@ -3,6 +3,7 @@ docker
 flake8
 molecule
 molecule-docker
+molecule-vagrant
 netaddr
 pytest
 pytest-testinfra

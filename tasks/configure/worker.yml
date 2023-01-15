@@ -14,7 +14,7 @@
   when:
     - not worker_k0s_state.state | default('missing') | string == "installed"
   block:
-    - name: create worker join token
+    - name: create join token on initial controller
       delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
       k0s_token:
         state: create
@@ -24,11 +24,12 @@
       register: worker_join_token
 
     - name: fail when no token returned
-      fail:
+      ansible.builtin.fail:
         msg: "missing token to join workers"
       when:
         - not worker_join_token is defined or
-          not worker_join_token.token is defined
+          not worker_join_token.token is defined or
+          worker_join_token.token | string | length == 0
 
     - name: write the k0s token file on worker
       ansible.builtin.copy:
@@ -58,12 +59,12 @@
       register: _k0s_reset
 
     - name: clean up the mess
-      file:
+      ansible.builtin.file:
         path: "{{ k0s_config_dir }}/k0s.yaml"
         state: absent
 
     - name: exit with fail
-      fail:
+      ansible.builtin.fail:
         msg: "Error while join workers!"
 
 - name: flush handlers

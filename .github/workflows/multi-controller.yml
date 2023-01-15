@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows:
-      - "code linter"
+      - "CI"
     branches:
       - main
       - feature/**
@@ -32,7 +32,7 @@ jobs:
         ansible-version:
           - '6.1'
         scenario:
-          - default
+          - multi-controller
 
     steps:
       - name: check out the codebase.
@@ -50,18 +50,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
 
-      # See: https://github.com/geerlingguy/ansible-role-mysql/issues/422
-      - name: Disable AppArmor
-        run: |
-            set -x
-            sudo apt-get install apparmor-profiles
-            sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
-            sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
-
       - name: test with tox
         run: |
-          tox -e ansible_$(printf "${{ matrix.ansible-version }}") \
-            -- molecule test --scenario-name multi-controller
+          make \
+            test \
+            -e TOX_SCENARIO="${{ matrix.scenario }}" \
+            -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
+            -e DISTRIBUTION="${{ matrix.image }}"
+
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

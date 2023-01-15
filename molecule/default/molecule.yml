@@ -40,7 +40,6 @@ provisioner:
 
 scenario:
   test_sequence:
-    - lint
     - destroy
     - dependency
     - syntax
@@ -52,4 +51,3 @@ scenario:
 
 verifier:
   name: testinfra
-
