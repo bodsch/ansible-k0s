@@ -47,6 +47,7 @@
 - name: copy admin config file to k0s kubeconfig
   delegate_to: localhost
   become: false
+  changed_when: false
   ansible.builtin.copy:
     src: "{{ k0s_local_tmp_directory }}/admin.conf"
     dest: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
@@ -65,6 +66,7 @@
 - name: set controller IP in kubeconfig
   delegate_to: localhost
   become: false
+  changed_when: false
   ansible.builtin.replace:
     path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
     regexp: 'localhost'

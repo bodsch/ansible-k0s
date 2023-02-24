@@ -21,6 +21,7 @@
 - name: update package cache
   ansible.builtin.package:
     update_cache: true
+    cache_valid_time: 1800
 
 - name: dependecies
   when:
