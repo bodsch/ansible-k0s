@@ -24,13 +24,37 @@
     - ansible_hostname in k0s_cluster_nodes | k0s_cluster_members('controller') or
       ansible_fqdn in k0s_cluster_nodes | k0s_cluster_members('controller')
   block:
-    - name: create default k0s config
-      k0s_config:
-        state: create
-        force: "{{ k0s_force }}"
-        data_dir: "{{ k0s_data_dir }}"
-        config_file: "{{ k0s_config_dir }}/k0s.yaml"
-        config_overwrites: "{{ k0s_config | default({}) }}"
-      register: default_k0s_config
+    # - name: create default k0s config
+    #   k0s_config:
+    #     state: create
+    #     force: "{{ k0s_force }}"
+    #     data_dir: "{{ k0s_data_dir }}"
+    #     config_file: "{{ k0s_config_dir }}/k0s.yaml"
+    #     config_overwrites: "{{ k0s_config | default({}) }}"
+    #   register: default_k0s_config
+
+      - name: K0s default config
+        become: true
+        ansible.builtin.command: k0s config create
+        register: default_k0s_config
+        changed_when: false
+
+      - name: Install K0s
+        ansible.builtin.set_fact:
+          k0s_default_config: "{{ default_k0s_config.stdout | from_yaml }}"
+
+      - name: Install K0s
+        ansible.builtin.set_fact:
+          k0s_config: "{{ k0s_default_config | combine(k0s_config_override, recursive=true) }}"
+
+      - name: Create K0s config
+        become: true
+        ansible.builtin.template:
+          src: k0s/k0s.yml.j2
+          dest: /etc/k0s/k0s.yaml
+          owner: root
+          group: root
+          mode: "0660"
+        notify: restart k0s_controller
 
 ...
