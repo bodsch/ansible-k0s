@@ -67,10 +67,8 @@
     k0s_delegate_to: "{{ ansible_host }}"
     k0s_local_tmp_directory: "{{
         lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-        default('/var/cache/ansible/k0s', true) }}/{{ k0s_main_version }}"
-  delegate_to: localhost
+        default('~/.cache/ansible/k0s', true) }}/{{ k0s_main_version }}"
   become: false
-  run_once: true
   when:
     - k0s_direct_download
 
