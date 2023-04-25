@@ -2,16 +2,9 @@
 name: multi worker
 
 on:
-  schedule:
-    - cron: "30 4 * * 0"
-  workflow_dispatch:
   workflow_run:
     workflows:
       - "CI"
-    branches:
-      - main
-      - feature/**
-      - fix/**
     types:
       - completed
 

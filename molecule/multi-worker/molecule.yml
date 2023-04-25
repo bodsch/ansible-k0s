@@ -32,31 +32,11 @@ platforms:
     docker_networks:
       - name: k8s
         ipam_config:
-          - subnet: "10.20.0.0/24"
-            gateway: "10.20.0.1"
+          - subnet: "10.21.0.0/24"
+            gateway: "10.21.0.2"
     networks:
       - name: k8s
-        ipv4_address: "10.20.0.10"
-
-  # - name: k0s-2
-  #   image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
-  #   command: ${MOLECULE_DOCKER_COMMAND:-""}
-  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-  #   privileged: true
-  #   pre_build_image: true
-  #   capabilities:
-  #     - SYS_ADMIN
-  #   tmpfs:
-  #     - /run
-  #     - /tmp
-  #   volumes:
-  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  #   groups:
-  #     - k0s
-  #     - k0s_controllers
-  #   networks:
-  #     - name: k8s
-  #       ipv4_address: "10.20.0.11"
+        ipv4_address: "10.21.0.10"
 
   - name: k0s-worker-1
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
@@ -73,7 +53,7 @@ platforms:
       - k0s_workers
     networks:
       - name: k8s
-        ipv4_address: "10.20.0.21"
+        ipv4_address: "10.21.0.21"
 
   - name: k0s-worker-2
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
@@ -90,18 +70,22 @@ platforms:
       - k0s_workers
     networks:
       - name: k8s
-        ipv4_address: "10.20.0.22"
+        ipv4_address: "10.21.0.22"
 
 provisioner:
   name: ansible
   ansible_args:
     - --diff
-  #   - -vvv
+    - -v
   config_options:
     defaults:
-      deprecation_warnings: True
+      deprecation_warnings: true
       stdout_callback: yaml
       callbacks_enabled: profile_tasks
+      gathering: smart
+      fact_caching: jsonfile
+      fact_caching_timeout: 8640
+      fact_caching_connection: "${MOLECULE_EPHEMERAL_DIRECTORY}/ansible_facts"
 
 scenario:
   test_sequence:

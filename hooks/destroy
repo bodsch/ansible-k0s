@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
 
-. hooks/_tox_base
-
-tox ${TOX_OPTS} -- molecule destroy ${TOX_ARGS}
+hooks/tox.sh "destroy"

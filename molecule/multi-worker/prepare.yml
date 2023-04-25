@@ -1,10 +1,31 @@
 ---
-- name: prepare container
+
+- name: information
   hosts: all
   gather_facts: true
 
   pre_tasks:
-    - debug:
+    - name: arch- / artixlinux
+      when:
+        - ansible_distribution | lower == 'archlinux' or
+          ansible_os_family | lower == 'artix linux'
+      block:
+        - name: update pacman system
+          ansible.builtin.command: |
+            pacman --refresh --sync --sysupgrade --noconfirm
+
+        - name: create depends service
+          ansible.builtin.copy:
+            mode: 0755
+            dest: /etc/init.d/net
+            content: |
+              #!/usr/bin/openrc-run
+              true
+          when:
+            - ansible_os_family | lower == 'artix linux'
+
+    - name: environment
+      ansible.builtin.debug:
         msg:
           - "os family            : {{ ansible_distribution }} ({{ ansible_os_family }})"
           - "distribution version : {{ ansible_distribution_major_version }}"

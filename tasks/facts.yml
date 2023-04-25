@@ -17,11 +17,12 @@
     get_attributes: false
   register: __stat_controller_k0s_conf
 
-- name: create local facts
-  ansible.builtin.template:
-    src: ansible_facts.j2
-    dest: /etc/ansible/facts.d/k0s.fact
-    mode: 0755
+- name: create custom fact file
+  bodsch.core.facts:
+    name: k0s
+    facts:
+      version: "{{ k0s_version }}"
+      config_checksum: "{{ __stat_controller_k0s_conf.stat.checksum }}"
 
 - name: update facts to get latest information
   ansible.builtin.setup:

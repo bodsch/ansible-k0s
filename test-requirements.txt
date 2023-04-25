@@ -1,8 +1,9 @@
 ansible-lint
 docker
+dnspython
 flake8
 molecule
-molecule-docker
+molecule-plugins[docker]
 molecule-vagrant
 netaddr
 pytest

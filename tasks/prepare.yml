@@ -35,6 +35,29 @@
     - name: update facts to get latest information
       ansible.builtin.setup:
 
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - k0s_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: k0sproject
+        repository: k0s
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+        github_tags: true
+      register: _latest_release
+
+    - name: re-define k0s_version
+      ansible.builtin.set_fact:
+        k0s_version: "{{ _latest_release.latest_release }}"
+
 - name: latest release
   delegate_to: localhost
   become: false
