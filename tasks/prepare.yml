@@ -34,6 +34,10 @@
 
     - name: update facts to get latest information
       ansible.builtin.setup:
+        gather_subset:
+          - '!all'
+          - '!any'
+          - facter
 
 - name: get latest release
   delegate_to: localhost
@@ -162,13 +166,5 @@
   ansible.builtin.set_fact:
     k0s_config: "{{ k0s_defaults_config | combine(k0s_config, recursive=True) }}"
     k0s_extra_arguments: "{{ k0s_defaults_extra_arguments | combine(k0s_extra_arguments, recursive=True) }}"
-
-- name: create ansible local facts directory
-  ansible.builtin.file:
-    dest: /etc/ansible/facts.d
-    state: directory
-    owner: root
-    group: root
-    mode: 0775
 
 ...

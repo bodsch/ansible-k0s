@@ -1,28 +1,7 @@
 ---
 
-- name: get checksum of k0s config file on ansible controller
-  delegate_to: localhost
-  become: false
-  ansible.builtin.stat:
-    path: "{{ k0s_local_tmp_directory }}/admin.conf"
-    get_md5: false
-    get_mime: false
-    get_attributes: false
-  register: k0s_admin_conf
-  #changed_when:
-  #  - not k0s_admin_conf.stat.exists | default('false')
-
-- name: save config file to ansible controller
-  become: true
-  ansible.builtin.fetch:
-    src: "{{ k0s_data_dir }}/pki/admin.conf"
-    dest: "{{ k0s_local_tmp_directory }}/admin.conf"
-    flat: true
-    validate_checksum: false
-    mode: 0644
-  when:
-    - not k0s_admin_conf.stat.exists or
-      ansible_local.k0s.config_checksum != k0s_admin_conf.stat.checksum
+- name: update facts to get latest information
+  ansible.builtin.setup:
 
 - name: create artifacts directory on ansible controller
   delegate_to: localhost
@@ -32,7 +11,30 @@
     path: "{{ k0s_artifacts_dir }}"
     mode: 0750
 
-- name: get checksum of k0s kubeconfig file on ansible controller
+- name: get checksum of k0s config file on ansible controller
+  delegate_to: localhost
+  become: false
+  ansible.builtin.stat:
+    path: "{{ k0s_local_tmp_directory }}/admin.org"
+    get_md5: false
+    get_mime: false
+    get_attributes: false
+  register: k0s_admin_conf
+
+- name: save config file to ansible controller
+  become: true
+  ansible.builtin.fetch:
+    src: "{{ k0s_data_dir }}/pki/admin.conf"
+    dest: "{{ k0s_local_tmp_directory }}/admin.org"
+    flat: true
+    validate_checksum: false
+    mode: 0644
+  register: fetched_k0s_admin_config
+  when:
+    - not k0s_admin_conf.stat.exists or
+      ansible_local.k0s.config_checksum != k0s_admin_conf.stat.checksum
+
+- name: detect k0s config file on ansible controller
   delegate_to: localhost
   become: false
   ansible.builtin.stat:
@@ -41,37 +43,53 @@
     get_mime: false
     get_attributes: false
   register: k0s_kubeconfig
-  changed_when:
-    - not k0s_kubeconfig.stat.exists | default('false')
 
 - name: copy admin config file to k0s kubeconfig
   delegate_to: localhost
   become: false
   ansible.builtin.copy:
-    src: "{{ k0s_local_tmp_directory }}/admin.conf"
+    src: "{{ k0s_local_tmp_directory }}/admin.org"
     dest: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
     remote_src: true
     mode: 0644
   when:
-    - k0s_kubeconfig.stat.checksum | default('X') != k0s_admin_conf.stat.checksum | default('x')
+    - not k0s_kubeconfig.stat.exists | default('false')
 
 - name: read kubeconfig
   delegate_to: localhost
   become: false
   ansible.builtin.slurp:
     src: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
+  no_log: true
   register: k0s_kubeconfig_content
 
-- name: set controller IP in kubeconfig
+- name: check cluster url in k0s config file on ansible controller
   delegate_to: localhost
   become: false
-  ansible.builtin.replace:
-    path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
-    regexp: 'localhost'
-    replace: "{{ ansible_default_ipv4.address }}"
+  ansible.builtin.set_fact:
+    k0s_valid_cluster_url: "{{ k0s_kubeconfig_content.content | b64decode | from_yaml | k0s_cluster_url(ansible_default_ipv4.address) }}"
+
+- name: change controller IP
   when:
-    - k0s_kubeconfig_content is defined
-    - k0s_kubeconfig_content.content is defined
-    - not k0s_kubeconfig_content.content | b64decode | from_yaml | k8s_cluster_url(ansible_default_ipv4.address)
+    - fetched_k0s_admin_config.changed | default('true') or
+      not k0s_kubeconfig.stat.exists | default('false') or
+      not k0s_valid_cluster_url
+  block:
+    - name: copy admin config file to k0s kubeconfig
+      delegate_to: localhost
+      become: false
+      ansible.builtin.copy:
+        src: "{{ k0s_local_tmp_directory }}/admin.org"
+        dest: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
+        remote_src: true
+        mode: 0644
+
+    - name: set controller IP in kubeconfig
+      delegate_to: localhost
+      become: false
+      ansible.builtin.replace:
+        path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
+        regexp: 'localhost'
+        replace: "{{ ansible_default_ipv4.address }}"
 
 ...

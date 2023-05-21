@@ -1,6 +1,8 @@
 ---
 
 - name: configure workers
+  delegate_to: localhost
+  run_once: true
   ansible.builtin.debug:
     msg:
       - "{{ k0s_cluster_nodes.workers | join(', ') }}"
@@ -32,21 +34,10 @@
           not worker_join_token.token is defined or
           worker_join_token.token | string | length == 0
 
-    - name: define join token for worker instances
-      ansible.builtin.set_fact:
-        _join_token_controller: "{{ worker_join_token.token }}"
-        cacheable: true
-      when:
-        - worker_join_token is defined
-        - worker_join_token.token is defined
-
-    - name: reload facts
-      ansible.builtin.setup:
-
     - name: write the k0s token file on worker instances
-      ansible.builtin.template:
-        src: k0s/controller-token.j2
+      ansible.builtin.copy:
         dest: "{{ k0s_token_files.worker }}"
+        content: "{{ worker_join_token.token }}"
         owner: "{{ k0s_system_user }}"
         group: "{{ k0s_system_user }}"
         mode: 0600

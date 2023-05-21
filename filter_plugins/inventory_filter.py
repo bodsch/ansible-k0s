@@ -19,7 +19,7 @@ class FilterModule(object):
         return {
             'group_members': self.group_members,
             'remove_group_members': self.remove_group_members,
-            'k8s_cluster_url': self.k8s_cluster_url,
+            'k0s_cluster_url': self.k0s_cluster_url,
             'k0s_cluster_members': self.k0s_cluster_members,
         }
 
@@ -63,6 +63,8 @@ class FilterModule(object):
 
           output: ['k0s-2', 'k0s-3', 'k0s-4']
         """
+        display.v("remove_group_members({data}, {not_in_group})")
+
         result = []
         for host_name, host_data in data.items():
             _name = host_data.get('host_name', '')
@@ -74,11 +76,11 @@ class FilterModule(object):
 
         result.sort()
 
-        display.v("= {}".format(result))
+        display.v("f= {result}")
 
         return result
 
-    def k8s_cluster_url(self, data, destination_url):
+    def k0s_cluster_url(self, data, destination_address):
         """
 
         """
@@ -89,14 +91,15 @@ class FilterModule(object):
         if clusters:
             host_name = ""
             server = clusters[0].get('cluster', {}).get('server', None)
-            # display.v("- {} ({})".format(server, type(server)))
+            # display.v(f"- {server}")
             pattern = re.compile(re_filter)
             host = re.search(pattern, server)
+
             if host:
                 host_name = host.group('host')
-                display.v("- found {}, should be {}".format(host_name, destination_url))
+                # display.v(f"- found '{host_name}', should be '{destination_address}'")
 
-            if host_name == destination_url:
+            if host_name == destination_address:
                 return True
 
         return False
@@ -105,17 +108,11 @@ class FilterModule(object):
         """
             return all cluster controller as list
         """
-        # display.v(f"k0s_cluster_members(self, {data}, {member})")
-
         result = []
 
         initial_controller = data.get("initial_controller", None)
         controllers = data.get("controllers", [])
         workers = data.get("workers", [])
-
-        # display.v(f" - {initial_controller}")
-        # display.v(f" - {controllers}")
-        # display.v(f" - {workers}")
 
         if member == 'controller':
             if initial_controller:
@@ -138,7 +135,5 @@ class FilterModule(object):
                 return []
 
         result = [x for x in result if x]
-
-        display.v(f" = result {result}")
-
+        # display.v(f" = result {result}")
         return result

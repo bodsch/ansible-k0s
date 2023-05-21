@@ -1,28 +1,41 @@
 ---
 
-# - block:
-#     - name: get checksum list
-#       set_fact:
-#         __k0s_checksums: "{{ lookup('url', k0s_release_download_url + '/download/v' + k0s_version + '/sha256sums.txt', wantlist=True) | list }}"
-#       run_once: true
-#
-#     - name: get checksum for {{ system_architecture }} architecture
-#       set_fact:
-#         __k0s_checksum: "{{ __k0s_checksums | k8s_checksum('linux', system_architecture) }}"
-#   delegate_to: localhost
-
-- name: download k0s binary {{ 'to ansible controller' if not k0s_direct_download else '' }}
+- name: check k0s {{ 'on ansible controller' if not k0s_direct_download else '' }}
   become: false
   delegate_to: "{{ k0s_delegate_to }}"
   run_once: "{{ 'false' if k0s_direct_download else 'true' }}"
-  ansible.builtin.get_url:
-    url: "{{ k0s_release_download_url }}/download/v{{ k0s_version }}/k0s-v{{ k0s_version }}-{{ system_architecture }}"
-    dest: "{{ k0s_local_tmp_directory }}/k0s"
-    mode: 0750
-  register: _download_archive
-  until: _download_archive is succeeded
-  retries: 5
-  delay: 2
-  check_mode: false
+  ansible.builtin.stat:
+    path: "{{ k0s_local_tmp_directory }}/k0s"
+    get_md5: false
+    get_mime: false
+    get_attributes: false
+  register: _dowloaded_k0s
+
+- name: download
+  when:
+    - not _dowloaded_k0s.stat.exists | default('false')
+  block:
+    - name: download k0s binary {{ 'to ansible controller' if not k0s_direct_download else '' }}
+      become: false
+      delegate_to: "{{ k0s_delegate_to }}"
+      run_once: "{{ 'false' if k0s_direct_download else 'true' }}"
+      ansible.builtin.get_url:
+        url: "{{ k0s_release_download_url }}/download/v{{ k0s_version }}/k0s-v{{ k0s_version }}-{{ system_architecture }}"
+        dest: "{{ k0s_local_tmp_directory }}/k0s"
+        mode: 0750
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+  rescue:
+    - name: remove old downloads
+      become: false
+      delegate_to: "{{ k0s_delegate_to }}"
+      run_once: "{{ 'false' if k0s_direct_download else 'true' }}"
+      ansible.builtin.file:
+        state: absent
+        path: "{{ k0s_local_tmp_directory }}/k0s"
 
 ...
