@@ -2,7 +2,6 @@
 
 galaxy_info:
   role_name: k0s
-  namespace: bodsch
 
   author: Bodo Schulz
   description: Install and configure a kubernetes cluster using ansible and the vanilla upstream Kubernetes distro k0s.
