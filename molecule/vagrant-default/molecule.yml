@@ -1,5 +1,8 @@
 ---
 
+role_name_check: 1
+
+
 dependency:
   name: galaxy
 
