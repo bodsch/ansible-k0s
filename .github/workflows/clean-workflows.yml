@@ -1,0 +1,31 @@
+---
+
+name: delete workflow runs
+
+on:
+  schedule:
+    - cron: "10 4 * * 0"
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+
+jobs:
+  delete-workflow-runs:
+    runs-on: ubuntu-latest
+    name: delete old workflow runs
+    steps:
+      - name: Delete workflow runs
+        uses: MajorScruffy/delete-old-workflow-runs@v0.3.0
+        with:
+          repository: bodsch/ansible-k0s
+          older-than-seconds: 2592000                          # remove all workflow runs older than 30 day
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
