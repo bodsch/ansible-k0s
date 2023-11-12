@@ -94,13 +94,6 @@ class K0sConfig(object):
 
         return result
 
-        return dict(
-            failed=_failed,
-            changed=_changed,
-            cmd=_cmd,
-            msg=_msg
-        )
-
     def _config_same(self):
         """
         """
