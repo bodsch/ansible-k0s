@@ -71,10 +71,6 @@ class K0sConfig(object):
               status      Display dynamic configuration reconciliation status
               validate    Validate k0s configuration
         """
-        _failed = True
-        _changed = False
-        _cmd = None
-        _msg = "initial call"
         file_size = 0
 
         if self.force and os.path.isfile(self.config_file):
@@ -83,7 +79,7 @@ class K0sConfig(object):
 
         if self.state == "create" and os.path.isfile(self.config_file):
             file_size = int(os.path.getsize(self.config_file))
-            if self._config_same() and file_size > 0:
+            if file_size > 0:
                 return dict(
                     msg=f"The configuration file {self.config_file} already exists or hasn't changed.",
                     changed=False,
