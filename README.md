@@ -135,7 +135,7 @@ k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 ### `k0s_config`
 
 Extension of the automatically created `k0s.yaml`
-The structure must correspond to the created configuration. An example file can be viewed [here](./k0s_example.yaml).
+The structure must correspond to the created configuration. An example file can be viewed [here](./k0s_config.example).
 
 
 ### single controller
