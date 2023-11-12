@@ -83,9 +83,9 @@ class K0sConfig(object):
 
         if self.state == "create" and os.path.isfile(self.config_file):
             file_size = int(os.path.getsize(self.config_file))
-            if file_size > 0:
+            if self._config_same() and file_size > 0:
                 return dict(
-                    msg=f"The configuration file {self.config_file} already exists.",
+                    msg=f"The configuration file {self.config_file} already exists or hasn't changed.",
                     changed=False,
                     failed=False
                 )
@@ -100,6 +100,19 @@ class K0sConfig(object):
             cmd=_cmd,
             msg=_msg
         )
+
+    def _config_same(self):
+        """
+        """
+        data = None
+        if os.path.isfile(self.config_file):
+            with open(self.config_file, "r") as stream:
+                try:
+                    data = yaml.safe_load(stream)
+                except yaml.YAMLError as exc:
+                    self.module.log(msg=f"  ERROR : '{exc}'")
+
+        return self._rec_merge(data, self.config_overwrites) == data
 
     def _create_config(self):
         """
