@@ -26,6 +26,8 @@ class K0sInstall(object):
 
         self.state = module.params.get("state")
         self.force = module.params.get("force")
+        self.debug = module.params.get("debug")
+        self.verbose = module.params.get("verbose")
         self.config = module.params.get("config")
         self.data_dir = module.params.get("data_dir")
         self.enable_worker = module.params.get("enable_worker")
@@ -36,14 +38,16 @@ class K0sInstall(object):
         self._worker_systemd_unit_file = "/etc/systemd/system/k0sworker.service"
 
         module.log(msg="----------------------------")
-        module.log(msg=f" k0s          : {self._k0s}")
-        module.log(msg=f" state        : {self.state}")
-        module.log(msg=f" force        : {self.force}")
-        module.log(msg=f" config       : {self.config}")
-        module.log(msg=f" data_dir     : {self.data_dir}")
-        module.log(msg=f" enable_worker: {self.enable_worker}")
-        module.log(msg=f" token_file   : {self.token_file}")
-        module.log(msg=f" arguments    : {self.arguments}")
+        module.log(msg=f" k0s               : {self._k0s}")
+        module.log(msg=f" state             : {self.state}")
+        module.log(msg=f" force             : {self.force}")
+        module.log(msg=f" debug             : {self.debug}")
+        module.log(msg=f" verbose           : {self.verbose}")
+        module.log(msg=f" config            : {self.config}")
+        module.log(msg=f" data_dir          : {self.data_dir}")
+        module.log(msg=f" enable_worker     : {self.enable_worker}")
+        module.log(msg=f" token_file        : {self.token_file}")
+        module.log(msg=f" arguments         : {self.arguments}")
         module.log(msg="----------------------------")
 
     def run(self):
@@ -202,41 +206,53 @@ class K0sInstall(object):
 
 def main():
 
-    module = AnsibleModule(
-        argument_spec=dict(
-            force=dict(
-                required=False,
-                default=False,
-                type=bool
-            ),
-            state=dict(
-                default="worker",
-                choices=["initial-controller", "controller", "worker"]
-            ),
-            config=dict(
-                required=False,
-                type='str'
-            ),
-            token_file=dict(
-                required=False,
-                type='str'
-            ),
-            data_dir=dict(
-                required=False,
-                default="/var/lib/k0s",
-                type='str'
-            ),
-            enable_worker=dict(
-                required=False,
-                default=False,
-                type=bool
-            ),
-            arguments=dict(
-                required=False,
-                default=[],
-                type=list
-            )
+    argument_spec=dict(
+        force=dict(
+            required=False,
+            default=False,
+            type=bool
         ),
+        state=dict(
+            default="worker",
+            choices=["initial-controller", "controller", "worker"]
+        ),
+        config=dict(
+            required=False,
+            type='str'
+        ),
+        token_file=dict(
+            required=False,
+            type='str'
+        ),
+        data_dir=dict(
+            required=False,
+            default="/var/lib/k0s",
+            type='str'
+        ),
+        enable_worker=dict(
+            required=False,
+            default=False,
+            type=bool
+        ),
+        arguments=dict(
+            required=False,
+            default=[],
+            type=list
+        ),
+        debug=dict(
+            required=False,
+            type=bool,
+            default=False,
+        ),
+        verbose=dict(
+            required=False,
+            type=bool,
+            default=False,
+        ),
+    )
+
+    module = AnsibleModule(
+        argument_spec=argument_spec,
         supports_check_mode=True,
     )
 

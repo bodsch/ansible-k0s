@@ -4,7 +4,6 @@
   ansible.builtin.systemd:
     daemon_reload: true
     force: true
-  notify: restart json_exporter
   when:
     - ansible_service_mgr == 'systemd'
 

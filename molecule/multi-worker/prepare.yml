@@ -24,6 +24,11 @@
           when:
             - ansible_os_family | lower == 'artix linux'
 
+    - name: update package cache
+      become: true
+      ansible.builtin.package:
+        update_cache: true
+
     - name: environment
       ansible.builtin.debug:
         msg:

@@ -24,14 +24,20 @@
   k0s_install:
     state: initial-controller
     force: "{{ k0s_force }}"
+    debug: "{{ k0s_debug | default(omit) }}"
+    verbose: "{{ k0s_verbose | default(omit) }}"
     config: "{{ k0s_config_dir }}/k0s.yaml"
     data_dir: "{{ k0s_data_dir }}"
     enable_worker: "{{ k0s_worker_on_controller | bool }}"
     arguments: "{{ k0s_extra_arguments.controller | default([]) + k0s_extra_args | default([]) }}"
   notify:
     - daemon-reload
-    - restart k0s_controller
+    # - restart k0s_controller
   register: install_initial_controller_cmd
+
+- name: controller output
+  ansible.builtin.debug:
+    msg: "{{ install_initial_controller_cmd.msg }}"
 
 - name: arm specific systemd drop-in
   when:
@@ -52,15 +58,27 @@
         mode: 0644
       notify:
         - daemon-reload
-        - restart k0s_controller
+        # - restart k0s_controller
 
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
+
+- name: start k0s initial controller
+  become: true
+  ansible.builtin.service:
+    name: k0scontroller
+    state: started
 
 - name: Wait until the process is finished and {{ k0s_data_dir }}/pki/admin.conf was created
   delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
   ansible.builtin.wait_for:
     path: "{{ k0s_data_dir }}/pki/admin.conf"
+    state: present
+
+- name: Wait until the process is finished and kube-controller-manager.pid was created
+  delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  ansible.builtin.wait_for:
+    path: /run/k0s/kube-controller-manager.pid
     state: present
 
 - name: start k0s controller

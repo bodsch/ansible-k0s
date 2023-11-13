@@ -48,6 +48,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
 
+      - name: create directories
+        run: |
+          mkdir -p /tmp/k0s/{controller,controller-1,controller-2,worker-1,worker-2}
+
       - name: test with tox
         run: |
           make \

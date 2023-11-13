@@ -11,8 +11,6 @@
 
 - name: download binary
   ansible.builtin.import_tasks: download.yml
-  when:
-    - not stat_k0s_binary.stat.exists
   tags:
     - k0s_download
     - k0s_install

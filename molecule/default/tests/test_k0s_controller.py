@@ -95,7 +95,6 @@ def test_directories(host, get_vars):
         "{0}/bin",
         "{0}/etcd",
         "{0}/manifests",
-        #        "{0}/manifests/api-config",
         "{0}/manifests/autopilot",
         "{0}/manifests/bootstraprbac",
         "{0}/manifests/calico",

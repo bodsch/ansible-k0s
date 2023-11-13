@@ -1,6 +1,76 @@
 ---
 
-- name: check k0s {{ 'on ansible controller' if not k0s_direct_download else '' }}
+- name: get latest release
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - k0s_version == "latest"
+  block:
+    - name: get latest release
+      delegate_to: localhost
+      become: false
+      run_once: true
+      bodsch.scm.github_latest:
+        project: k0sproject
+        repository: k0s
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+        github_tags: true
+      register: _latest_release
+
+    - name: re-define k0s_version
+      ansible.builtin.set_fact:
+        k0s_version: "{{ _latest_release.latest_release }}"
+
+# - name: latest release
+#   delegate_to: localhost
+#   become: false
+#   run_once: true
+#   when:
+#     - k0s_version == "latest"
+#   block:
+#     - name: get latest release
+#       ansible.builtin.uri:
+#         url: "https://api.github.com/repos/k0sproject/k0s/releases/latest"
+#         method: GET
+#         return_content: true
+#         status_code: 200
+#         body_format: json
+#         validate_certs: false
+#         user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+#         password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+#       no_log: "{{ not lookup('env', 'ANSIBLE_DEBUG') | bool }}"
+#       register: _latest_release
+#       until: _latest_release.status == 200
+#       retries: 5
+#
+#     - name: re-define k0s_version
+#       ansible.builtin.set_fact:
+#         k0s_version: "{{ _latest_release.json.tag_name[1:] }}"
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    k0s_delegate_to: "{{ ansible_host }}"
+    k0s_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/k0s', true) }}/{{ k0s_main_version }}"
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - k0s_direct_download
+
+- name: create download directory
+  become: false
+  delegate_to: "{{ k0s_delegate_to }}"
+  ansible.builtin.file:
+    path: "{{ k0s_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+  run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
+
+- name: detect the downloaded k0s binary
   become: false
   delegate_to: "{{ k0s_delegate_to }}"
   run_once: "{{ 'false' if k0s_direct_download else 'true' }}"
@@ -13,6 +83,7 @@
 
 - name: download
   when:
+    - _dowloaded_k0s.stat is defined
     - not _dowloaded_k0s.stat.exists | default('false')
   block:
     - name: download k0s binary {{ 'to ansible controller' if not k0s_direct_download else '' }}
@@ -37,5 +108,9 @@
       ansible.builtin.file:
         state: absent
         path: "{{ k0s_local_tmp_directory }}/k0s"
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: A serious error occurred when downloading the archive.
 
 ...

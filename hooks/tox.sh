@@ -49,4 +49,6 @@ then
   echo ""
 fi
 
+mkdir -p /tmp/k0s/{controller,worker-1,worker-2}
+
 tox ${TOX_OPTS} -- molecule ${TOX_TEST} ${TOX_ARGS}

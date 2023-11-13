@@ -46,9 +46,12 @@
       k0s_install:
         state: worker
         force: "{{ k0s_force }}"
+        debug: "{{ k0s_debug | default(omit) }}"
+        verbose: "{{ k0s_verbose | default(omit) }}"
         data_dir: "{{ k0s_data_dir }}"
         token_file: "{{ k0s_token_files.worker }}"
-        arguments: "{{ k0s_extra_args | default([]) }}"
+        # arguments: "{{ k0s_extra_args | default([]) }}"
+        arguments: "{{ k0s_extra_arguments.worker | default([]) + k0s_extra_args | default([]) }}"
       notify:
         - daemon-reload
         - restart k0s_worker
@@ -82,5 +85,11 @@
   register: k0sworker_started
   notify:
     - wait for kublet on port 10250
+
+- name: Wait until the process is finished and status.sock was created
+  # delegate_to: "{{ k0s_cluster_nodes.initial_controller }}"
+  ansible.builtin.wait_for:
+    path: /run/k0s/status.sock
+    state: present
 
 ...

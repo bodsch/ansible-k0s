@@ -107,14 +107,20 @@ If you want to use something stable, please use a [Tagged Version](https://githu
 k0s_version: 1.25.2+k0s.0
 k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 
-k0s_system_user: "{{ ansible_user }}"
-k0s_system_group: "{{ ansible_user }}"
+k0s_system_user: k0s
+k0s_system_group: k0s
 
 k0s_config_dir: /etc/k0s
 k0s_data_dir: /var/lib/k0s
 k0s_libexec_dir: /usr/libexec/k0s
 
 k0s_direct_download: false
+
+k0s_worker_on_controller: false
+
+k0s_force: false
+k0s_debug: false
+k0s_verbose: false
 
 k0s_cluster_nodes:
   initial_controller: ""
@@ -125,14 +131,14 @@ k0s_extra_arguments:
   controller:
     - --enable-metrics-scraper
 
-k0s_config: {}
+k0s_config_overwrites: {}
 
-k0s_token_expiry: "1h"
+k0s_token_expiry: "15m"
 
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 ```
 
-### `k0s_config`
+### `k0s_config_overwrites`
 
 Extension of the automatically created `k0s.yaml`
 The structure must correspond to the created configuration. An example file can be viewed [here](./k0s_config.example).
@@ -173,6 +179,7 @@ k0s_cluster_nodes:
     - worker-2.k0s.local
     - worker-3.k0s.local
 ```
+
 
 ## Credits
 

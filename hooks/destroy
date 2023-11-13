@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
 hooks/tox.sh "destroy"
+
+rm -rf "/tmp/k0s"

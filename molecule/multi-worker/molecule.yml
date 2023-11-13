@@ -9,7 +9,6 @@ driver:
   name: docker
 
 lint: |
-  set -e
   yamllint .
   ansible-lint .
   flake8 .
@@ -21,6 +20,18 @@ platforms:
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
     pre_build_image: true
+    cgroupns_mode: host
+    mounts:
+      - source: /sys/fs/cgroup
+        target: /sys/fs/cgroup
+        type: bind
+        read_only: false
+      - source: /tmp/k0s/controller
+        target: /opt/k0s
+        type: bind
+        read_only: false
+    volumes:
+      - /var/lib/containerd
     capabilities:
       - SYS_ADMIN
     tmpfs:
@@ -29,17 +40,23 @@ platforms:
     groups:
       - k0s
       - k0s_initial_controller
-    volumes:
-      - /tmp/molecule/k0s/controller:/opt
+    etc_hosts:
+      controller.k0s.cluster: 192.168.56.10
     network_mode: default
     docker_networks:
       - name: k8s
         ipam_config:
           - subnet: "10.21.0.0/24"
             gateway: "10.21.0.2"
+      - name: cluster
+        ipam_config:
+          - subnet: "192.168.56.0/24"
+            gateway: "192.168.56.2"
     networks:
       - name: k8s
         ipv4_address: "10.21.0.10"
+      - name: cluster
+        ipv4_address: "192.168.56.10"
 
   - name: k0s-worker-1
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
@@ -47,16 +64,30 @@ platforms:
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
     pre_build_image: true
+    cgroupns_mode: host
+    mounts:
+      - source: /sys/fs/cgroup
+        target: /sys/fs/cgroup
+        type: bind
+        read_only: false
+      - source: /tmp/k0s/worker-1
+        target: /opt/k0s
+        type: bind
+        read_only: false
+    volumes:
+      - /var/lib/containerd
     capabilities:
       - SYS_ADMIN
-    volumes:
-      - /tmp/molecule/k0s/worker-1:/opt:rw
     groups:
       - k0s
       - k0s_workers
+    etc_hosts:
+      controller.k0s.cluster: 192.168.56.10
     networks:
       - name: k8s
         ipv4_address: "10.21.0.21"
+      - name: cluster
+        ipv4_address: "192.168.56.21"
 
   - name: k0s-worker-2
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
@@ -64,16 +95,30 @@ platforms:
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
     pre_build_image: true
+    cgroupns_mode: host
+    mounts:
+      - source: /sys/fs/cgroup
+        target: /sys/fs/cgroup
+        type: bind
+        read_only: false
+      - source: /tmp/k0s/worker-2
+        target: /opt/k0s
+        type: bind
+        read_only: false
+    volumes:
+      - /var/lib/containerd
     capabilities:
       - SYS_ADMIN
-    volumes:
-      - /tmp/molecule/k0s/worker-2:/opt:rw
     groups:
       - k0s
       - k0s_workers
+    etc_hosts:
+      controller.k0s.cluster: 192.168.56.10
     networks:
       - name: k8s
         ipv4_address: "10.21.0.22"
+      - name: cluster
+        ipv4_address: "192.168.56.22"
 
 provisioner:
   name: ansible
