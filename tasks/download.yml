@@ -76,7 +76,7 @@
   run_once: "{{ 'false' if k0s_direct_download else 'true' }}"
   ansible.builtin.stat:
     path: "{{ k0s_local_tmp_directory }}/k0s"
-    get_md5: false
+    get_checksum: false
     get_mime: false
     get_attributes: false
   register: _dowloaded_k0s

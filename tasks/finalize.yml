@@ -16,7 +16,7 @@
   become: false
   ansible.builtin.stat:
     path: "{{ k0s_local_tmp_directory }}/admin.org"
-    get_md5: false
+    get_checksum: false
     get_mime: false
     get_attributes: false
   register: k0s_admin_conf
@@ -39,7 +39,7 @@
   become: false
   ansible.builtin.stat:
     path: "{{ k0s_artifacts_dir }}/k0s-kubeconfig.yml"
-    get_md5: false
+    get_checksum: false
     get_mime: false
     get_attributes: false
   register: k0s_kubeconfig
