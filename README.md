@@ -8,15 +8,15 @@ Use vanilla upstream Kubernetes distro [k0s](https://github.com/k0sproject/k0s).
 Similar to [movd/k0s-ansible](https://github.com/movd/k0s-ansible), **but** better (i think so ;) )
 
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-k0s/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-k0s)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-k0s)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-k0s/main.yml?logo=github&branch=main)][ci]
+[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-k0s?logo=github)][issues]
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-k0s?logo=github)][releases]
+[![Ansible Downloads](https://img.shields.io/ansible/role/d/bodsch/k0s?logo=ansible)][galaxy]
 
 [ci]: https://github.com/bodsch/ansible-k0s/actions
 [issues]: https://github.com/bodsch/ansible-k0s/issues?q=is%3Aopen+is%3Aissue
 [releases]: https://github.com/bodsch/ansible-k0s/releases
-[quality]: https://galaxy.ansible.com/bodsch/k0s
+[galaxy]: https://galaxy.ansible.com/bodsch/k0s
 
 
 If `latest` is set for `k0s_version`, the role tries to install the latest release version.  

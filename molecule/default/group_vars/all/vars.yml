@@ -1,8 +1,10 @@
 ---
 
-# k0s_cluster_nodes:
-#   initial_controller: k0s-controller
-#   controllers: []
-#   workers: []
+k0s_cluster_nodes:
+  initial_controller: k0s-controller
+  controllers: []
+  workers: []
+
+k0s_verbose: true
 
 ...

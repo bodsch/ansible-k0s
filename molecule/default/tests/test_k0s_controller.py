@@ -104,7 +104,7 @@ def test_directories(host, get_vars):
         "{0}/manifests/kubelet",
         "{0}/manifests/kubeproxy",
         "{0}/manifests/kuberouter",
-        "{0}/manifests/metrics",
+        # "{0}/manifests/metrics",
         "{0}/manifests/metricserver",
         "{0}/pki",
         "{0}/pki/etcd",

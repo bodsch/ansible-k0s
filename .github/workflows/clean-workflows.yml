@@ -16,6 +16,45 @@ on:
           - info
           - warning
           - debug
+      days:
+        description: 'Days-worth of runs to keep for each workflow.'
+        required: true
+        default: 30
+      minimum_runs:
+        description: 'Minimum number of runs per workflow.'
+        required: true
+        default: 6
+      delete_workflow_pattern:
+        description: 'Name or filename of the workflow (if not set, all workflows are targeted)'
+        required: false
+      delete_workflow_by_state_pattern:
+        description: 'Filter workflows by state: active, deleted, disabled_fork, disabled_inactivity, disabled_manually'
+        required: true
+        default: "All"
+        type: choice
+        options:
+          - "All"
+          - active
+          - deleted
+          - disabled_inactivity
+          - disabled_manually
+      delete_run_by_conclusion_pattern:
+        description: 'Remove runs based on conclusion: action_required, cancelled, failure, skipped, success'
+        required: true
+        default: "All"
+        type: choice
+        options:
+          - "All"
+          - "Unsuccessful: action_required,cancelled,failure,skipped"
+          - action_required
+          - cancelled
+          - failure
+          - skipped
+          - success
+      dry_run:
+        description: 'Logs simulated changes, no deletions are performed'
+        required: false
+
 
 jobs:
   delete-workflow-runs:
@@ -23,9 +62,18 @@ jobs:
     name: delete old workflow runs
     steps:
       - name: Delete workflow runs
-        uses: MajorScruffy/delete-old-workflow-runs@v0.3.0
+        uses: Mattraks/delete-workflow-runs@v2
         with:
-          repository: bodsch/ansible-k0s
-          older-than-seconds: 2592000                          # remove all workflow runs older than 30 day
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: ${{ github.event.inputs.days }}
+          keep_minimum_runs: ${{ github.event.inputs.minimum_runs }}
+          delete_workflow_pattern: ${{ github.event.inputs.delete_workflow_pattern }}
+          delete_workflow_by_state_pattern: ${{ github.event.inputs.delete_workflow_by_state_pattern }}
+          delete_run_by_conclusion_pattern: >-
+            ${{
+              startsWith(github.event.inputs.delete_run_by_conclusion_pattern, 'Unsuccessful:')
+              && 'action_required,cancelled,failure,skipped'
+              || github.event.inputs.delete_run_by_conclusion_pattern
+            }}
+          dry_run: ${{ github.event.inputs.dry_run }}

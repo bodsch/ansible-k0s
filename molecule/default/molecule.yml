@@ -27,10 +27,10 @@ platforms:
         target: /sys/fs/cgroup
         type: bind
         read_only: false
-      - source: /tmp/k0s/controller
-        target: /var/lib/k0s
-        type: bind
-        read_only: false
+      # - source: /tmp/k0s/controller
+      #   target: /var/lib/k0s
+      #   type: bind
+      #   read_only: false
     volumes:
       - /var/lib/containerd
     capabilities:
