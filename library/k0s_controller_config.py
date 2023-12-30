@@ -28,6 +28,8 @@ class K0sConfig(object):
 
         self.state = module.params.get("state")
         self.force = module.params.get("force")
+        self.debug = module.params.get("debug")
+        self.verbose = module.params.get("verbose")
         self.config_file = module.params.get("config_file")
         self.config_overwrites = module.params.get("config_overwrites")
         self.data_dir = module.params.get("data_dir")
@@ -37,6 +39,8 @@ class K0sConfig(object):
         module.log(msg=f" k0s               : {self._k0s}")
         module.log(msg=f" state             : {self.state}")
         module.log(msg=f" force             : {self.force}")
+        module.log(msg=f" debug             : {self.debug}")
+        module.log(msg=f" verbose           : {self.verbose}")
         module.log(msg=f" config file       : {self.config_file}")
         module.log(msg=f" config overwrites : {self.config_overwrites}")
         module.log(msg=f" data_dir          : {self.data_dir}")
@@ -78,8 +82,11 @@ class K0sConfig(object):
             os.remove(self.config_file)
 
         if self.state == "create" and os.path.isfile(self.config_file):
+
             file_size = int(os.path.getsize(self.config_file))
-            if file_size > 0:
+            same_config = self._config_same()
+
+            if self._config_same() and file_size > 0:
                 return dict(
                     msg=f"The configuration file {self.config_file} already exists or hasn't changed.",
                     changed=False,
@@ -101,7 +108,9 @@ class K0sConfig(object):
                 except yaml.YAMLError as exc:
                     self.module.log(msg=f"  ERROR : '{exc}'")
 
-        return self._rec_merge(data, self.config_overwrites) == data
+        merged_data = self._rec_merge(data, self.config_overwrites)
+
+        return merged_data == data
 
     def _create_config(self):
         """
@@ -110,8 +119,16 @@ class K0sConfig(object):
         args.append(self._k0s)
         args.append("config")
         args.append(self.state)
-        args.append("--data-dir")
-        args.append(self.data_dir)
+
+        if self.data_dir:
+            args.append("--data-dir")
+            args.append(self.data_dir)
+
+        if self.debug:
+            args.append("--debug")
+
+        if self.verbose:
+            args.append("--verbose")
 
         if self.state == "validate":
             args.append("--config")
@@ -199,6 +216,8 @@ class K0sConfig(object):
             if data:
                 data = self._rec_merge(data, self.config_overwrites)
 
+                self.module.log(msg=f" = {data}")
+
                 with open(self.config_file, 'w') as file:
                     _ = yaml.dump(data, file)
 
@@ -218,6 +237,7 @@ class K0sConfig(object):
                 # we could further check types and merge as appropriate here.
         d3 = d1.copy()
         d3.update(d2)
+
         return d3
 
     def _exec(self, args):
@@ -239,37 +259,49 @@ class K0sConfig(object):
 
 def main():
 
-    module = AnsibleModule(
-        argument_spec=dict(
-            force=dict(
-                required=False,
-                default=False,
-                type=bool
-            ),
-            state=dict(
-                default="create",
-                choices=["create", "edit", "status", "validate"]
-            ),
-            config_file=dict(
-                required=True,
-                type='str'
-            ),
-            data_dir=dict(
-                required=False,
-                default="/var/lib/k0s",
-                type='str'
-            ),
-            arguments=dict(
-                required=False,
-                default=[],
-                type=list
-            ),
-            config_overwrites=dict(
-                required=False,
-                default={},
-                type=dict
-            ),
+    argument_specs=dict(
+        force=dict(
+            required=False,
+            default=False,
+            type=bool
         ),
+        state=dict(
+            default="create",
+            choices=["create", "edit", "status", "validate"]
+        ),
+        config_file=dict(
+            required=True,
+            type='str'
+        ),
+        data_dir=dict(
+            required=False,
+            default="/var/lib/k0s",
+            type='str'
+        ),
+        arguments=dict(
+            required=False,
+            default=[],
+            type=list
+        ),
+        config_overwrites=dict(
+            required=False,
+            default={},
+            type=dict
+        ),
+        debug=dict(
+            required=False,
+            type=bool,
+            default=False,
+        ),
+        verbose=dict(
+            required=False,
+            type=bool,
+            default=False,
+        ),
+    )
+
+    module = AnsibleModule(
+        argument_spec=argument_specs,
         supports_check_mode=True,
     )
 

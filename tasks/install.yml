@@ -1,6 +1,34 @@
 ---
 
-- name: detect binary file for k0s '{{ k0s_local_tmp_directory }}/k0s'
+- name: user and group handling
+  when:
+    - k0s_system_user != "root"
+  block:
+    - name: create k0s group
+      ansible.builtin.group:
+        name: "{{ k0s_system_group }}"
+        state: present
+        system: true
+
+    - name: create k0s user
+      ansible.builtin.user:
+        name: "{{ k0s_system_user }}"
+        groups: "{{ k0s_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
+
+- name: create install directory
+  ansible.builtin.file:
+    path: "{{ k0s_install_path }}"
+    state: directory
+    owner: "{{ k0s_system_user }}"
+    group: "{{ k0s_system_group }}"
+    mode: 0755
+
+- name: detect extracted binary file for k0s on '{{ k0s_delegate_to }}'
   become: false
   delegate_to: "{{ k0s_delegate_to }}"
   run_once: "{{ 'false' if k0s_direct_download else 'true' }}"
@@ -8,33 +36,108 @@
     path: "{{ k0s_local_tmp_directory }}/k0s"
   register: stat_file_binary
 
-- name: propagate k0s
+- name: fail when extracted binary are missing
+  ansible.builtin.fail:
+    msg: "missing extracted binary on ansible controller"
   when:
-    - stat_file_binary.stat.exists
+    - not stat_file_binary.stat.exists
+
+- name: detect installed k0s binary
+  ansible.builtin.stat:
+    path: "{{ k0s_install_path }}/k0s"
+  register: stat_k0s_binary
+
+- name: detect activated k0s binary
+  ansible.builtin.stat:
+    path: /usr/bin/k0s
+  register: stat_k0s_activated
+
+- name: install and activate k0s
+  when:
+    - (stat_k0s_binary.stat is defined and not stat_k0s_binary.stat.exists | default('false')) or
+      not stat_k0s_activated.stat | bodsch.core.linked_version(k0s_install_path, k0s_version)
   block:
-    - name: propagate k0s binaries
-      ansible.builtin.copy:
-        src: "{{ k0s_local_tmp_directory }}/k0s"
-        dest: "{{ k0s_install_path }}/"
-        mode: 0755
-        owner: "{{ k0s_system_user }}"
-        group: "{{ k0s_system_group }}"
-        remote_src: "{{ 'true' if k0s_direct_download else 'false' }}"
+    - name: propagate files
+      block:
+        - name: propagate k0s binary
+          ansible.builtin.copy:
+            src: "{{ k0s_local_tmp_directory }}/k0s"
+            dest: "{{ k0s_install_path }}/k0s"
+            mode: 0755
+            owner: "{{ k0s_system_user }}"
+            group: "{{ k0s_system_group }}"
+            remote_src: "{{ 'true' if k0s_direct_download else 'false' }}"
 
-    - name: make files executable
-      ansible.builtin.file:
-        path: "{{ k0s_install_path }}/k0s"
-        mode: 0755
-        owner: "{{ k0s_system_user }}"
-        group: "{{ k0s_system_group }}"
+        - name: make files executable
+          ansible.builtin.file:
+            path: "{{ k0s_install_path }}/k0s"
+            mode: 0755
+            owner: "{{ k0s_system_user }}"
+            group: "{{ k0s_system_group }}"
 
-- name: create link to binary
-  ansible.builtin.file:
-    src: "{{ k0s_install_path }}/k0s"
-    dest: "/usr/bin/k0s"
-    state: link
-    force: true
-    follow: false
+        - name: ensure k0s binary has cap_net_raw capability
+          community.general.capabilities:
+            path: "{{ k0s_install_path }}/k0s"
+            capability: cap_net_raw+ep
+            state: present
+          when:
+            - not ansible_check_mode
+
+        - name: create link to binary
+          ansible.builtin.file:
+            src: "{{ k0s_install_path }}/k0s"
+            dest: /usr/bin/k0s
+            state: link
+            force: true
+            follow: false
+          #notify:
+          #  - restart blackbox exporter
+
+      rescue:
+        - name: delete install directory
+          ansible.builtin.file:
+            path: "{{ k0s_install_path }}"
+            state: absent
+
+        - name: exit with fail
+          ansible.builtin.fail:
+            msg: A serious error occurred during the installation of the binary.
+
+# - name: detect binary file for k0s '{{ k0s_local_tmp_directory }}/k0s'
+#   become: false
+#   delegate_to: "{{ k0s_delegate_to }}"
+#   run_once: "{{ 'false' if k0s_direct_download else 'true' }}"
+#   ansible.builtin.stat:
+#     path: "{{ k0s_local_tmp_directory }}/k0s"
+#   register: stat_file_binary
+#
+# - name: propagate k0s
+#   when:
+#     - stat_file_binary.stat.exists
+#   block:
+#     - name: propagate k0s binaries
+#       ansible.builtin.copy:
+#         src: "{{ k0s_local_tmp_directory }}/k0s"
+#         dest: "{{ k0s_install_path }}/"
+#         mode: 0755
+#         owner: "{{ k0s_system_user }}"
+#         group: "{{ k0s_system_group }}"
+#         remote_src: "{{ 'true' if k0s_direct_download else 'false' }}"
+#
+#     - name: make files executable
+#       ansible.builtin.file:
+#         path: "{{ k0s_install_path }}/k0s"
+#         mode: 0755
+#         owner: "{{ k0s_system_user }}"
+#         group: "{{ k0s_system_group }}"
+#
+# - name: create link to binary
+#   ansible.builtin.file:
+#     src: "{{ k0s_install_path }}/k0s"
+#     dest: "/usr/bin/k0s"
+#     state: link
+#     force: true
+#     follow: false
 
 - name: bash completion
   when:

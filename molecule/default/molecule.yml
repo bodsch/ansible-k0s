@@ -21,6 +21,18 @@ platforms:
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
     pre_build_image: true
+    cgroupns_mode: host
+    mounts:
+      - source: /sys/fs/cgroup
+        target: /sys/fs/cgroup
+        type: bind
+        read_only: false
+      # - source: /tmp/k0s/controller
+      #   target: /var/lib/k0s
+      #   type: bind
+      #   read_only: false
+    volumes:
+      - /var/lib/containerd
     capabilities:
       - SYS_ADMIN
     tmpfs:

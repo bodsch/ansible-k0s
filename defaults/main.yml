@@ -1,6 +1,6 @@
 ---
 
-k0s_version: 1.28.3+k0s.0
+k0s_version: 1.27.3+k0s.0
 k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 
 k0s_system_user: k0s
@@ -15,6 +15,8 @@ k0s_direct_download: false
 k0s_worker_on_controller: false
 
 k0s_force: false
+k0s_debug: false
+k0s_verbose: false
 
 k0s_cluster_nodes:
   initial_controller: ""
@@ -22,13 +24,16 @@ k0s_cluster_nodes:
   workers: []
 
 k0s_extra_arguments:
-  controller:
-    - --enable-metrics-scraper
+  controller: []
+    # - --enable-metrics-scraper
 
-k0s_token_expiry: "1h"
+k0s_token_expiry: "15m"
 
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 
-k0s_config: {}
+k0s_config_overwrites: {}
+
+# k0s_config_arguments: []
+
 
 ...

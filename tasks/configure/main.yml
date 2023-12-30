@@ -1,12 +1,12 @@
 ---
 
-# - name: configure nodes
-#   ansible.builtin.debug:
-#     msg:
-#       - "{{ k0s_cluster_nodes }}"
-#       - "{{ ansible_hostname }}"
-#       - "{{ ansible_fqdn }}"
-#   run_once: true
+- name: configure nodes
+  ansible.builtin.debug:
+    msg:
+      - "{{ k0s_cluster_nodes }}"
+      - "{{ ansible_hostname }}"
+      - "{{ ansible_fqdn }}"
+  run_once: true
 
 - name: create k0s directories
   become: true
@@ -19,18 +19,48 @@
     - "{{ k0s_data_dir }}"
     - "{{ k0s_libexec_dir }}"
 
-- name: handle k0s config file
+- name: handle k0s controller config file
   when:
     - ansible_hostname in k0s_cluster_nodes | k0s_cluster_members('controller') or
       ansible_fqdn in k0s_cluster_nodes | k0s_cluster_members('controller')
   block:
     - name: create default k0s config
-      k0s_config:
+      k0s_controller_config:
         state: create
         force: "{{ k0s_force }}"
+        debug: "{{ k0s_debug | default(omit) }}"
+        verbose: "{{ k0s_verbose | default(omit) }}"
         data_dir: "{{ k0s_data_dir }}"
         config_file: "{{ k0s_config_dir }}/k0s.yaml"
-        config_overwrites: "{{ k0s_config | default({}) }}"
+        config_overwrites: "{{ k0s_config_overwrites | default({}) }}"
+        arguments: "{{ k0s_extra_arguments.controller | default([]) + k0s_extra_args | default([]) }}"
       register: default_k0s_config
+
+    - name: config message
+      ansible.builtin.debug:
+        msg: "{{ default_k0s_config.msg }}"
+
+  rescue:
+    - name: reset full k0s config and data_dir
+      k0s_reset:
+        data_dir: "{{ k0s_data_dir }}"
+        config: "{{ k0s_config_dir }}/k0s.yaml"
+      register: _k0s_reset
+      when:
+        - stat_k0s_binary.stat.exists
+      tags:
+        - k0s_reset
+
+    - name: remove directories
+      ansible.builtin.file:
+        state: absent
+        path: "{{ item }}"
+      loop:
+        - "{{ k0s_config_dir }}"
+        - "{{ k0s_data_dir }}"
+        - "{{ k0s_libexec_dir }}"
+        - "{{ k0s_install_path }}"
+        - /usr/bin/k0s
+        - /etc/ansible/facts.d/k0s.fact
 
 ...

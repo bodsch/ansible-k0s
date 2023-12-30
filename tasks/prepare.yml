@@ -18,10 +18,6 @@
         - default.yaml
       skip: true
 
-- name: update package cache
-  ansible.builtin.package:
-    update_cache: true
-
 - name: dependecies
   when:
     - k0s_requirements is defined
@@ -34,137 +30,41 @@
 
     - name: update facts to get latest information
       ansible.builtin.setup:
-        gather_subset:
-          - '!all'
-          - '!any'
-          - facter
+        # gather_subset:
+        #   - '!all'
+        #   - '!any'
+        #   - facter
 
-- name: get latest release
-  delegate_to: localhost
-  become: false
-  run_once: true
-  when:
-    - k0s_version == "latest"
-  block:
-    - name: get latest release
-      delegate_to: localhost
-      become: false
-      run_once: true
-      bodsch.scm.github_latest:
-        project: k0sproject
-        repository: k0s
-        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
-        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
-        github_tags: true
-      register: _latest_release
 
-    - name: re-define k0s_version
-      ansible.builtin.set_fact:
-        k0s_version: "{{ _latest_release.latest_release }}"
+# - name: detect our installation path '{{ k0s_install_path | dirname }}'
+#   ansible.builtin.stat:
+#     path: "{{ k0s_install_path | dirname }}"
+#     get_checksum: false
+#   register: stat_k0s_path
+#   ignore_errors: true
+#
+# - name: remove installed k0s
+#   ansible.builtin.file:
+#     state: absent
+#     path: "{{ stat_k0s_path.stat.path }}"
+#   when:
+#     - stat_k0s_path is defined
+#     - stat_k0s_path.stat is defined
+#     - stat_k0s_path.stat.isdir is defined
+#     - not stat_k0s_path.stat.isdir
+#
+# - name: flush handlers
+#   ansible.builtin.meta: flush_handlers
+#
+# - name: detect installed k0s binary
+#   ansible.builtin.stat:
+#     path: "{{ k0s_install_path }}/k0s"
+#   register: stat_k0s_binary
 
-- name: latest release
-  delegate_to: localhost
-  become: false
-  run_once: true
-  when:
-    - k0s_version == "latest"
-  block:
-    - name: get latest release
-      ansible.builtin.uri:
-        url: "https://api.github.com/repos/k0sproject/k0s/releases/latest"
-        method: GET
-        return_content: true
-        status_code: 200
-        body_format: json
-        validate_certs: false
-        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
-        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
-      no_log: "{{ not lookup('env', 'ANSIBLE_DEBUG') | bool }}"
-      register: _latest_release
-      until: _latest_release.status == 200
-      retries: 5
-
-    - name: re-define k0s_version
-      ansible.builtin.set_fact:
-        k0s_version: "{{ _latest_release.json.tag_name[1:] }}"
-
-- name: define delegate instance for download handling
-  ansible.builtin.set_fact:
-    k0s_delegate_to: "{{ ansible_host }}"
-    k0s_local_tmp_directory: "{{
-        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-        default('/var/cache/ansible/k0s', true) }}/{{ k0s_main_version }}"
-  delegate_to: localhost
-  become: false
-  run_once: true
-  when:
-    - k0s_direct_download
-
-- name: detect our installation path '{{ k0s_install_path | dirname }}'
-  ansible.builtin.stat:
-    path: "{{ k0s_install_path | dirname }}"
-    get_checksum: false
-  register: stat_k0s_path
-  ignore_errors: true
-
-- name: remove installed k0s
-  ansible.builtin.file:
-    state: absent
-    path: "{{ stat_k0s_path.stat.path }}"
-  when:
-    - stat_k0s_path is defined
-    - stat_k0s_path.stat is defined
-    - stat_k0s_path.stat.isdir is defined
-    - not stat_k0s_path.stat.isdir
-
-- name: flush handlers
-  ansible.builtin.meta: flush_handlers
-
-- name: detect installed k0s binary
-  ansible.builtin.stat:
-    path: "{{ k0s_install_path }}/k0s"
-  register: stat_k0s_binary
-
-- name: create download directory
-  become: false
-  delegate_to: "{{ k0s_delegate_to }}"
-  ansible.builtin.file:
-    path: "{{ k0s_local_tmp_directory }}"
-    state: directory
-    mode: 0750
-  run_once: "{{ 'true' if not k0s_direct_download else 'false' }}"
-
-- name: user and group handling
-  when:
-    - k0s_system_user != "root"
-  block:
-    - name: create k0s group
-      ansible.builtin.group:
-        name: "{{ k0s_system_group }}"
-        state: present
-        system: true
-
-    - name: create k0s user
-      ansible.builtin.user:
-        name: "{{ k0s_system_user }}"
-        groups: "{{ k0s_system_group }}"
-        append: true
-        shell: /usr/sbin/nologin
-        system: true
-        createhome: false
-        home: /nonexistent
-
-- name: create install directory
-  ansible.builtin.file:
-    path: "{{ k0s_install_path }}"
-    state: directory
-    owner: "{{ k0s_system_user }}"
-    group: "{{ k0s_system_group }}"
-    mode: 0755
 
 - name: merge k0s configuration between defaults and custom
   ansible.builtin.set_fact:
-    k0s_config: "{{ k0s_defaults_config | combine(k0s_config, recursive=True) }}"
+    k0s_config_overwrites: "{{ k0s_defaults_config_overwrites | combine(k0s_config_overwrites, recursive=True) }}"
     k0s_extra_arguments: "{{ k0s_defaults_extra_arguments | combine(k0s_extra_arguments, recursive=True) }}"
 
 ...

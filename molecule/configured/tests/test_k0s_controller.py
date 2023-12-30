@@ -109,7 +109,6 @@ def test_directories(host, get_vars):
         "{0}/bin",
         "{0}/etcd",
         "{0}/manifests",
-        "{0}/manifests/api-config",
         "{0}/manifests/autopilot",
         "{0}/manifests/bootstraprbac",
         "{0}/manifests/calico",
@@ -119,7 +118,6 @@ def test_directories(host, get_vars):
         "{0}/manifests/kubelet",
         "{0}/manifests/kubeproxy",
         "{0}/manifests/kuberouter",
-        "{0}/manifests/metrics",
         "{0}/manifests/metricserver",
         "{0}/pki",
         "{0}/pki/etcd",
@@ -136,10 +134,28 @@ def test_files(host, get_vars):
     data_directory = get_vars.get("k0s_data_dir", None)
 
     files = [
+        "{0}/bin/containerd",
+        "{0}/bin/containerd-shim",
+        "{0}/bin/containerd-shim-runc-v1",
+        "{0}/bin/containerd-shim-runc-v2",
         "{0}/bin/etcd",
+        "{0}/bin/iptables",
+        "{0}/bin/iptables-restore",
+        "{0}/bin/iptables-save",
         "{0}/bin/kube-apiserver",
         "{0}/bin/kube-controller-manager",
         "{0}/bin/kube-scheduler",
+        "{0}/bin/kubelet",
+        "{0}/bin/runc",
+        "{0}/pki/admin.conf",
+        "{0}/pki/admin.crt",
+        "{0}/pki/admin.key",
+        "{0}/pki/etcd/server.crt",
+        "{0}/pki/scheduler.conf",
+        "{0}/pki/scheduler.crt",
+        "{0}/pki/scheduler.key",
+        "{0}/kubelet-config.yaml",
+        "{0}/kubelet.conf",
     ]
 
     for file in files:
@@ -155,3 +171,44 @@ def test_service(host):
 
     assert service.is_enabled
     assert service.is_running
+
+# runs not in docker ... WHY!?
+# def test_listen(host, get_vars):
+#     """
+#         test sockets
+#     """
+#     listening = host.socket.get_listening_sockets()
+#     interfaces = host.interface.names()
+#     eth = []
+#
+#     if "eth0" in interfaces:
+#         eth = host.interface("eth0").addresses
+#
+#     for i in listening:
+#         print(i)
+#
+#     for i in interfaces:
+#         print(i)
+#
+#     for i in eth:
+#         print(i)
+#
+#     # k0s
+#     # runs not in docker ... WHY!?
+#     # assert host.socket("tcp://0.0.0.0:9443").is_listening
+#     # etcd
+#     assert host.socket("tcp://127.0.0.1:2379").is_listening
+#     assert host.socket(f"tcp://{eth[0]}:2380").is_listening
+#     # kube-apiserver
+#     assert host.socket("tcp://0.0.0.0:6443").is_listening
+#     # kube-controller
+#     assert host.socket("tcp://127.0.0.1:10257").is_listening
+#     # kube-scheduler
+#     assert host.socket("tcp://127.0.0.1:10259").is_listening
+#     # konnectivity-se
+#     #  runs not in docker ... WHY!?
+#     # assert host.socket("tcp://0.0.0.0:8092").is_listening
+#     # assert host.socket("tcp://127.0.0.1:8133").is_listening
+#     # assert host.socket("tcp://0.0.0.0:8132").is_listening
+#     # sockets
+#     # assert host.socket("unix:///run/k0s/konnectivity-server/konnectivity-server.sock").is_listening

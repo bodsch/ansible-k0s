@@ -1,7 +1,5 @@
 ---
 
-ansible_user: root
-
 k0s_force: false
 
 k0s_data_dir: /opt/k0s

@@ -8,15 +8,15 @@ Use vanilla upstream Kubernetes distro [k0s](https://github.com/k0sproject/k0s).
 Similar to [movd/k0s-ansible](https://github.com/movd/k0s-ansible), **but** better (i think so ;) )
 
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-k0s/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-k0s)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-k0s)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-k0s/main.yml?logo=github&branch=main)][ci]
+[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-k0s?logo=github)][issues]
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-k0s?logo=github)][releases]
+[![Ansible Downloads](https://img.shields.io/ansible/role/d/bodsch/k0s?logo=ansible)][galaxy]
 
 [ci]: https://github.com/bodsch/ansible-k0s/actions
 [issues]: https://github.com/bodsch/ansible-k0s/issues?q=is%3Aopen+is%3Aissue
 [releases]: https://github.com/bodsch/ansible-k0s/releases
-[quality]: https://galaxy.ansible.com/bodsch/k0s
+[galaxy]: https://galaxy.ansible.com/bodsch/k0s
 
 
 If `latest` is set for `k0s_version`, the role tries to install the latest release version.  
@@ -107,14 +107,20 @@ If you want to use something stable, please use a [Tagged Version](https://githu
 k0s_version: 1.25.2+k0s.0
 k0s_release_download_url: https://github.com/k0sproject/k0s/releases
 
-k0s_system_user: "{{ ansible_user }}"
-k0s_system_group: "{{ ansible_user }}"
+k0s_system_user: k0s
+k0s_system_group: k0s
 
 k0s_config_dir: /etc/k0s
 k0s_data_dir: /var/lib/k0s
 k0s_libexec_dir: /usr/libexec/k0s
 
 k0s_direct_download: false
+
+k0s_worker_on_controller: false
+
+k0s_force: false
+k0s_debug: false
+k0s_verbose: false
 
 k0s_cluster_nodes:
   initial_controller: ""
@@ -125,14 +131,14 @@ k0s_extra_arguments:
   controller:
     - --enable-metrics-scraper
 
-k0s_config: {}
+k0s_config_overwrites: {}
 
-k0s_token_expiry: "1h"
+k0s_token_expiry: "15m"
 
 k0s_artifacts_dir: "{{ inventory_dir }}/artifacts"
 ```
 
-### `k0s_config`
+### `k0s_config_overwrites`
 
 Extension of the automatically created `k0s.yaml`
 The structure must correspond to the created configuration. An example file can be viewed [here](./k0s_config.example).
@@ -173,6 +179,7 @@ k0s_cluster_nodes:
     - worker-2.k0s.local
     - worker-3.k0s.local
 ```
+
 
 ## Credits
 

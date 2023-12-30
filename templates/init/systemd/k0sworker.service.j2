@@ -1,24 +1,30 @@
-[Unit]
-Description               = k0s - Zero Friction Kubernetes
-Documentation             = https://docs.k0sproject.io
-# ConditionFileIsExecutable = /usr/local/bin/k0s/{{ k0s_version }}/k0s
+{{ ansible_managed | comment }}
 
-After                     = network-online.target
-Wants                     = network-online.target
+[Unit]
+Description                   = k0s - Zero Friction Kubernetes
+Documentation                 = https://docs.k0sproject.io
+# ConditionFileIsExecutable     = /usr/bin/k0s
+After                         = network-online.target
+Wants                         = network-online.target
 
 [Service]
-StartLimitInterval        = 5
-StartLimitBurst           = 10
-ExecStart                 = /usr/local/bin/k0s/{{ k0s_version }}/k0s worker --token-file=/etc/k0s/worker-token --verbose=true
+StartLimitInterval            = 5
+StartLimitBurst               = 10
 
-RestartSec                = 120
-Delegate                  = yes
-KillMode                  = process
-LimitCORE                 = infinity
-TasksMax                  = infinity
-TimeoutStartSec           = 0
-LimitNOFILE               = 999999
-Restart                   = always
+ExecStart                     = /usr/bin/k0s worker --token-file=/etc/k0s/worker-token --verbose=true
+
+Delegate                      = yes
+KillMode                      = process
+LimitCORE                     = infinity
+TasksMax                      = infinity
+TimeoutStartSec               = 0
+LimitNOFILE                   = 999999
+
+SyslogIdentifier              = k0s-worker
+
+Restart                       = on-failure
+RestartSec                    = 120s
+RestartSteps                  = 20
 
 [Install]
-WantedBy                  = multi-user.target
+WantedBy                      = multi-user.target

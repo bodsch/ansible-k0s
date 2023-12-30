@@ -15,7 +15,7 @@ lint: |
   flake8 .
 
 platforms:
-  - name: k0s-controller-1
+  - name: k0s-controller
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
@@ -28,7 +28,7 @@ platforms:
         type: bind
         read_only: false
       - source: /tmp/k0s/controller
-        target: /opt/k0s
+        target: /var/lib/k0s
         type: bind
         read_only: false
     volumes:
@@ -41,15 +41,8 @@ platforms:
     groups:
       - k0s
       - k0s_initial_controller
-    network_mode: default
-    docker_networks:
-      - name: k8s
-        ipam_config:
-          - subnet: "10.22.0.0/24"
-            gateway: "10.22.0.2"
-    networks:
-      - name: k8s
-        ipv4_address: "10.22.0.10"
+    etc_hosts:
+      controller.k0s.cluster: 172.17.0.2
 
 provisioner:
   name: ansible

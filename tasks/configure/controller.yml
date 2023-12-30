@@ -43,14 +43,17 @@
       k0s_install:
         state: controller
         force: "{{ k0s_force }}"
+        debug: "{{ k0s_debug | default(omit) }}"
+        verbose: "{{ k0s_verbose | default(omit) }}"
         config: "{{ k0s_config_dir }}/k0s.yaml"
         token_file: "{{ k0s_token_files.controller }}"
         data_dir: "{{ k0s_data_dir }}"
-        arguments: "{{ k0s_extra_args | default([]) }}"
+        arguments: "{{ k0s_extra_arguments.controller | default([]) + k0s_extra_args | default([]) }}"
       notify:
         - daemon-reload
-        - restart k0s_controller
+        # - restart k0s_controller
       register: install_controller_cmd
+
   rescue:
     - name: reset full k0s config and data_dir
       k0s_reset:
@@ -90,10 +93,16 @@
         mode: 0644
       notify:
         - daemon-reload
-        - restart k0s_controller
+        # - restart k0s_controller
 
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
+
+- name: start k0s controller
+  become: true
+  ansible.builtin.service:
+    name: k0scontroller
+    state: started
 
 # - name: Wait until the process is finished and {{ k0s_data_dir }}/pki/admin.conf was created
 #   ansible.builtin.wait_for:

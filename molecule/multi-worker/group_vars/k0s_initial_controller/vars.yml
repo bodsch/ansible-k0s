@@ -1,0 +1,17 @@
+---
+
+k0s_config_overwrites:
+  spec:
+    telemetry:
+      enabled: false
+    network:
+      clusterDomain: k0s.cluster
+    api:
+      address: 192.168.56.2
+      externalAddress: controller.k0s.cluster
+      sans:
+        - controller.k0s.cluster
+        - worker-1.k0s.cluster
+        - worker-2.k0s.cluster
+        - 192.168.56.2
+...
