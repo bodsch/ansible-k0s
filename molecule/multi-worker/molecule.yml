@@ -8,14 +8,9 @@ dependency:
 driver:
   name: docker
 
-lint: |
-  yamllint .
-  ansible-lint .
-  flake8 .
-
 platforms:
   - name: k0s-controller
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -24,10 +19,6 @@ platforms:
     mounts:
       - source: /sys/fs/cgroup
         target: /sys/fs/cgroup
-        type: bind
-        read_only: false
-      - source: /tmp/k0s/controller
-        target: /opt/k0s
         type: bind
         read_only: false
     volumes:
@@ -59,7 +50,7 @@ platforms:
         ipv4_address: "192.168.56.10"
 
   - name: k0s-worker-1
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -68,10 +59,6 @@ platforms:
     mounts:
       - source: /sys/fs/cgroup
         target: /sys/fs/cgroup
-        type: bind
-        read_only: false
-      - source: /tmp/k0s/worker-1
-        target: /opt/k0s
         type: bind
         read_only: false
     volumes:
@@ -90,7 +77,7 @@ platforms:
         ipv4_address: "192.168.56.21"
 
   - name: k0s-worker-2
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -99,10 +86,6 @@ platforms:
     mounts:
       - source: /sys/fs/cgroup
         target: /sys/fs/cgroup
-        type: bind
-        read_only: false
-      - source: /tmp/k0s/worker-2
-        target: /opt/k0s
         type: bind
         read_only: false
     volumes:

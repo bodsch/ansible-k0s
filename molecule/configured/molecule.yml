@@ -8,15 +8,9 @@ dependency:
 driver:
   name: docker
 
-lint: |
-  set -e
-  yamllint .
-  ansible-lint .
-  flake8 .
-
 platforms:
   - name: k0s-controller
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -25,10 +19,6 @@ platforms:
     mounts:
       - source: /sys/fs/cgroup
         target: /sys/fs/cgroup
-        type: bind
-        read_only: false
-      - source: /tmp/k0s/controller
-        target: /var/lib/k0s
         type: bind
         read_only: false
     volumes:

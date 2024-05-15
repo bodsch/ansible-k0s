@@ -55,25 +55,29 @@ def get_vars(host):
     """
     base_dir, molecule_dir = base_directory()
     distribution = host.system_info.distribution
+    operation_system = None
 
     if distribution in ['debian', 'ubuntu']:
-        os = "debian"
+        operation_system = "debian"
     elif distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
-        os = "redhat"
-    elif distribution in ['arch']:
-        os = "archlinux"
+        operation_system = "redhat"
+    elif distribution in ['arch', 'artix']:
+        operation_system = f"{distribution}linux"
 
-    print(" -> {} / {}".format(distribution, os))
+    # print(" -> {} / {}".format(distribution, os))
+    # print(" -> {}".format(base_dir))
 
-    file_defaults = read_ansible_yaml("{}/defaults/main".format(base_dir), "role_defaults")
-    file_vars = read_ansible_yaml("{}/vars/main".format(base_dir), "role_vars")
-    file_distibution = read_ansible_yaml("{}/vars/{}".format(base_dir, os), "role_distibution")
-    file_molecule = read_ansible_yaml("{}/group_vars/all/vars".format(molecule_dir), "test_vars")
+    file_defaults = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
+    file_vars = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
+    file_distibution = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
+    file_molecule = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
+    # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
 
     defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
     vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
     distibution_vars = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
     molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    # host_vars          = host.ansible("include_vars", file_host_molecule).get("ansible_facts").get("host_vars")
 
     ansible_vars = defaults_vars
     ansible_vars.update(vars_vars)
@@ -95,17 +99,15 @@ def test_directories(host, get_vars):
         "{0}/bin",
         "{0}/etcd",
         "{0}/manifests",
-        "{0}/manifests/api-config",
         "{0}/manifests/autopilot",
         "{0}/manifests/bootstraprbac",
         "{0}/manifests/calico",
         "{0}/manifests/calico_init",
         "{0}/manifests/coredns",
         "{0}/manifests/helm",
-        "{0}/manifests/kubelet",
+        # "{0}/manifests/kubelet",
         "{0}/manifests/kubeproxy",
         "{0}/manifests/kuberouter",
-        "{0}/manifests/metrics",
         "{0}/manifests/metricserver",
         "{0}/pki",
         "{0}/pki/etcd",

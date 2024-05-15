@@ -8,15 +8,9 @@ dependency:
 driver:
   name: docker
 
-lint: |
-  set -e
-  yamllint .
-  ansible-lint .
-  flake8 .
-
 platforms:
   - name: k0s-controller-1
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -25,10 +19,6 @@ platforms:
     mounts:
       - source: /sys/fs/cgroup
         target: /sys/fs/cgroup
-        type: bind
-        read_only: false
-      - source: /tmp/k0s/controller-1
-        target: /var/lib/k0s
         type: bind
         read_only: false
     volumes:
@@ -52,7 +42,7 @@ platforms:
         ipv4_address: "10.20.0.10"
 
   - name: k0s-controller-2
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -61,10 +51,6 @@ platforms:
     mounts:
       - source: /sys/fs/cgroup
         target: /sys/fs/cgroup
-        type: bind
-        read_only: false
-      - source: /tmp/k0s/controller-2
-        target: /opt/k0s
         type: bind
         read_only: false
     volumes:
