@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # (c) 2022, Bodo Schulz <bodo@boone-schulz.de>

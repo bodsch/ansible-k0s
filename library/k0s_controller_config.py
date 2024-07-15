@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # (c) 2022, Bodo Schulz <bodo@boone-schulz.de>
@@ -86,7 +86,7 @@ class K0sConfig(object):
             file_size = int(os.path.getsize(self.config_file))
             same_config = self._config_same()
 
-            if self._config_same() and file_size > 0:
+            if same_config and file_size > 0:
                 return dict(
                     msg=f"The configuration file {self.config_file} already exists or hasn't changed.",
                     changed=False,
@@ -259,7 +259,7 @@ class K0sConfig(object):
 
 def main():
 
-    argument_specs=dict(
+    argument_specs = dict(
         force=dict(
             required=False,
             default=False,

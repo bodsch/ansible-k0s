@@ -41,7 +41,7 @@ on:
       delete_run_by_conclusion_pattern:
         description: 'Remove runs based on conclusion: action_required, cancelled, failure, skipped, success'
         required: true
-        default: "All"
+        default: "Unsuccessful: action_required,cancelled,failure,skipped"
         type: choice
         options:
           - "All"

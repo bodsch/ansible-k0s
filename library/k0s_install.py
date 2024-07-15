@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # (c) 2022, Bodo Schulz <bodo@boone-schulz.de>
@@ -206,7 +206,7 @@ class K0sInstall(object):
 
 def main():
 
-    argument_spec=dict(
+    argument_spec = dict(
         force=dict(
             required=False,
             default=False,

@@ -1,10 +1,11 @@
 ---
-name: CI
+name: k0s with configuration
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows:
-      - "code linter"
+      - "CI"
     types:
       - completed
 
@@ -18,66 +19,14 @@ env:
 
 jobs:
 
-  arch:
-    name: "${{ matrix.image }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
+  debian:
+    name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }}"
     runs-on: ubuntu-22.04
     if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
       fail-fast: false
       matrix:
         image:
-          - archlinux:latest
-        python_version:
-          - "3.10"
-          - "3.11"
-        ansible-version:
-          - '8.5'
-        scenario:
-          - default
-
-    steps:
-      - name: check out the codebase.
-        uses: actions/checkout@v4
-        with:
-          path: 'ansible-k0s'
-          ref: ${{ github.event.workflow_run.head_branch }}
-
-      - name: 🐍 set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "${{ matrix.python_version }}"
-
-      - name: install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r test-requirements.txt
-
-      - name: force reinstall of community.docker
-        run: |
-          mkdir -p /home/runner/.ansible/collections
-          ansible-galaxy collection install community.docker --force
-
-      - name: create directories
-        run: |
-          mkdir -p /tmp/k0s/{controller,controller-1,controller-2,worker-1,worker-2}
-
-      - name: test with tox
-        run: |
-          make \
-            test \
-            -e TOX_SCENARIO="${{ matrix.scenario }}" \
-            -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
-            -e DISTRIBUTION="${{ matrix.image }}"
-
-  debian:
-    name: "${{ matrix.image }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
-    runs-on: ubuntu-20.04
-    if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        image:
-          - debian:11
           - debian:12
         python_version:
           - "3.10"
@@ -118,13 +67,13 @@ jobs:
 
   ubuntu:
     name: "${{ matrix.image }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
-    runs-on: ubuntu-20.04
-    if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-22.04
+    needs:
+      - debian
     strategy:
       fail-fast: false
       matrix:
         image:
-          - ubuntu:20.04
           - ubuntu:22.04
         python_version:
           - "3.10"
@@ -162,3 +111,55 @@ jobs:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           DISTRIBUTION: ${{ matrix.image }}
+
+  scenarios:
+    name: "${{ matrix.scenario }} / ansible ${{ matrix.ansible-version }} / python ${{ matrix.python_version }}"
+    runs-on: ubuntu-22.04
+    needs:
+      - debian
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - debian:12
+        python_version:
+          - "3.11"
+        ansible-version:
+          - '8.5'
+        scenario:
+          - multi-controller
+          - multi-worker
+
+    steps:
+      - name: check out the codebase.
+        uses: actions/checkout@v4
+        with:
+          path: 'ansible-k0s'
+          ref: ${{ github.event.workflow_run.head_branch }}
+
+      - name: 🐍 set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "${{ matrix.python_version }}"
+
+      - name: install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r test-requirements.txt
+
+      - name: force reinstall of community.docker
+        run: |
+          mkdir -p /home/runner/.ansible/collections
+          ansible-galaxy collection install community.docker --force
+
+      - name: create directories
+        run: |
+          mkdir -p /tmp/k0s/{controller,controller-1,controller-2,worker-1,worker-2}
+
+      - name: test with tox
+        run: |
+          make \
+            test \
+            -e TOX_SCENARIO="${{ matrix.scenario }}" \
+            -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
+            -e DISTRIBUTION="${{ matrix.image }}"
