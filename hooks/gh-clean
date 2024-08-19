@@ -5,68 +5,8 @@ set -e
 org=bodsch
 repo=$(basename $(git rev-parse --show-toplevel))
 
-keep_first_two() {
-    local arr=("$@")  # Das Array wird als Argument übergeben
-    local new_arr=("${arr[@]:0:2}")  # Die ersten beiden Elemente werden beibehalten
-    echo "${new_arr[@]}"  # Das neue Array wird ausgegeben
-}
+export GH_REPOSITORY="${repo}"
+export GH_USERNAME="${org:-bodsch}"
+export GH_KEEP_WORKFLOWS="${GH_KEEP_WORKFLOWS:-2}"
 
-remove_elements() {
-  local arr=("$@")
-  local result=()
-  local length=${#arr[@]}
-
-  # Check whether the array has more than two elements
-  if [ $length -le 2 ]
-  then
-    return
-  fi
-
-  # Keep the first two elements
-  for ((i=2; i<length; i++))
-  do
-    result+=("${arr[i]}") # Collect removed elements
-  done
-
-  echo "${result[@]}"
-}
-
-
-if [ -n "${org}" ] && [ -n "${repo}" ]
-then
-
-  # Get workflow IDs with status "active"
-  workflow_ids=($(gh api repos/$org/$repo/actions/workflows --paginate | jq '.workflows[] | select(.["state"] | contains("active")) | .id'))
-
-  for workflow_id in "${workflow_ids[@]}"
-  do
-    echo "Listing runs for the workflow ID $workflow_id"
-    run_ids=( $(gh api repos/$org/$repo/actions/workflows/$workflow_id/runs --paginate | jq '.workflow_runs[].id') )
-
-    # echo "${run_ids[@]}"
-
-    # count array
-    count_ids=${#run_ids[@]}
-    # echo "  - ${count_ids} entries"
-
-    if [ ${count_ids} -gt 2 ]
-    then
-      # remove the first two elements of the list
-      array=$(remove_elements "${run_ids[@]}")
-
-      for run_id in ${array}
-      do
-        echo "Deleting Run ID $run_id"
-        gh api repos/$org/$repo/actions/runs/$run_id -X DELETE >/dev/null
-      done
-
-      echo "-------------------------------------------------"
-    fi
-  done
-else
-  echo "missing values:"
-  echo "  - org : '${org}'"
-  echo "  - repo: '${repo}'"
-
-  exit 1
-fi
+python hooks/gh-clean.py
