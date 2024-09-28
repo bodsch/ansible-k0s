@@ -31,6 +31,7 @@ class K0sInstall(object):
         self.config = module.params.get("config")
         self.data_dir = module.params.get("data_dir")
         self.enable_worker = module.params.get("enable_worker")
+        self.no_taints = module.params.get("no_taints")
         self.token_file = module.params.get("token_file")
         self.arguments = module.params.get("arguments")
 
@@ -46,6 +47,7 @@ class K0sInstall(object):
         module.log(msg=f" config            : {self.config}")
         module.log(msg=f" data_dir          : {self.data_dir}")
         module.log(msg=f" enable_worker     : {self.enable_worker}")
+        module.log(msg=f" no_taints         : {self.no_taints}")
         module.log(msg=f" token_file        : {self.token_file}")
         module.log(msg=f" arguments         : {self.arguments}")
         module.log(msg="----------------------------")
@@ -117,6 +119,9 @@ class K0sInstall(object):
 
         if self.state in ["initial-controller", "controller"] and self.enable_worker:
             args.append("--enable-worker")
+
+        if self.state in ["initial-controller", "controller"] and self.no_taints:
+            args.append("--no-taints")
 
         if self.config is not None and os.path.isfile(self.config):
             args.append("--config")
@@ -230,6 +235,11 @@ def main():
             type='str'
         ),
         enable_worker=dict(
+            required=False,
+            default=False,
+            type=bool
+        ),
+        no_taints=dict(
             required=False,
             default=False,
             type=bool
