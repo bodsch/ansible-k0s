@@ -65,7 +65,8 @@ Tested on
 
 * ArchLinux
 * Debian based
-    - Debian 10 / 11
+    - Debian 10 / 11 / 12
+    - Ubuntu 20.04 / 22.04 / 24.04
 
 
 ## working implementation
@@ -117,6 +118,7 @@ k0s_libexec_dir: /usr/libexec/k0s
 k0s_direct_download: false
 
 k0s_worker_on_controller: false
+k0s_no_taints: false
 
 k0s_force: false
 k0s_debug: false

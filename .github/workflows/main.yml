@@ -19,7 +19,7 @@ env:
 jobs:
 
   arch:
-    name: "${{ matrix.image }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
+    name: "${{ matrix.image }}: (ansible ${{ matrix.ansible-version }}, python ${{ matrix.python_version }})"
     runs-on: ubuntu-22.04
     if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
@@ -28,8 +28,8 @@ jobs:
         image:
           - archlinux:latest
         python_version:
-          - "3.10"
           - "3.11"
+          - "3.12"
         ansible-version:
           - '8.5'
         scenario:

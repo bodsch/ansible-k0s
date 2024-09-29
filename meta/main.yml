@@ -7,7 +7,7 @@ galaxy_info:
   description: Install and configure a kubernetes cluster using ansible and the vanilla upstream Kubernetes distro k0s.
 
   license: Apache
-  min_ansible_version: "2.9"
+  min_ansible_version: "2.15"
 
   platforms:
     - name: ArchLinux
@@ -15,7 +15,18 @@ galaxy_info:
       versions:
         # 11
         - bullseye
+        # 12
         - bookworm
+    - name: Ubuntu
+      # https://wiki.ubuntu.com/Releases
+      # https://github.com/ansible/ansible-lint/blob/main/src/ansiblelint/schemas/meta.json
+      versions:
+        # 20.04
+        - focal
+        # 22.04
+        - jammy
+        # 24.04
+        - noble
 
   galaxy_tags:
     - development
