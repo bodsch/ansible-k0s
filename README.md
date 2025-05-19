@@ -1,11 +1,14 @@
 
-# Ansible Role:  `k0s`
+# Ansible Role:  `bodsch.k0s`
 
 Create a Kubernetes Cluster using Ansible.
 
 Use vanilla upstream Kubernetes distro [k0s](https://github.com/k0sproject/k0s).
 
 Similar to [movd/k0s-ansible](https://github.com/movd/k0s-ansible), **but** better (i think so ;) )
+
+> I am currently unable to find a sensible use for a local Kubernetes installation.
+> I will therefore stop maintaining this repository due to lack of time.
 
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-k0s/main.yml?logo=github&branch=main)][ci]
