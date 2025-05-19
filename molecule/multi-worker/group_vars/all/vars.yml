@@ -9,8 +9,8 @@ k0s_cluster_nodes:
     - k0s-worker-1
     - k0s-worker-2
 
-# k0s_force: true
+k0s_force: false
 k0s_debug: false
-k0s_verbose: true
+k0s_verbose: false
 
 ...

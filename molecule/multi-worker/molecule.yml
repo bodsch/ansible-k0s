@@ -28,7 +28,9 @@ platforms:
       - k0s
       - k0s_initial_controller
     etc_hosts:
-      controller.k0s.cluster: 192.168.56.10
+      controller.k0s.cluster: 172.15.56.10
+      worker-1.k0s.cluster: 172.15.56.21
+      worker-2.k0s.cluster: 172.15.56.22
     network_mode: default
     docker_networks:
       - name: k8s
@@ -37,13 +39,13 @@ platforms:
             gateway: "10.21.0.2"
       - name: cluster
         ipam_config:
-          - subnet: "192.168.56.0/24"
-            gateway: "192.168.56.2"
+          - subnet: "172.15.56.0/24"
+            gateway: "172.15.56.2"
     networks:
       - name: k8s
         ipv4_address: "10.21.0.10"
       - name: cluster
-        ipv4_address: "192.168.56.10"
+        ipv4_address: "172.15.56.10"
 
   - name: k0s-worker-1
     image: "ghcr.io/bodsch/docker-ansible/ansible-${DISTRIBUTION:-debian:12}"
@@ -64,12 +66,14 @@ platforms:
       - k0s
       - k0s_workers
     etc_hosts:
-      controller.k0s.cluster: 192.168.56.10
+      controller.k0s.cluster: 172.15.56.10
+      worker-1.k0s.cluster: 172.15.56.21
+      worker-2.k0s.cluster: 172.15.56.22
     networks:
       - name: k8s
         ipv4_address: "10.21.0.21"
       - name: cluster
-        ipv4_address: "192.168.56.21"
+        ipv4_address: "172.15.56.21"
 
   - name: k0s-worker-2
     image: "ghcr.io/bodsch/docker-ansible/ansible-${DISTRIBUTION:-debian:12}"
@@ -90,12 +94,14 @@ platforms:
       - k0s
       - k0s_workers
     etc_hosts:
-      controller.k0s.cluster: 192.168.56.10
+      controller.k0s.cluster: 172.15.56.10
+      worker-1.k0s.cluster: 172.15.56.21
+      worker-2.k0s.cluster: 172.15.56.22
     networks:
       - name: k8s
         ipv4_address: "10.21.0.22"
       - name: cluster
-        ipv4_address: "192.168.56.22"
+        ipv4_address: "172.15.56.22"
 
 provisioner:
   name: ansible

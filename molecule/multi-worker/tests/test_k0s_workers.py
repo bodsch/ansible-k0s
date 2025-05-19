@@ -126,7 +126,7 @@ def test_files(host, get_vars):
         "{0}/bin/containerd-shim",
         "{0}/bin/kubelet",
         "{0}/bin/runc",
-        "{0}/kubelet-config.yaml",
+        "{0}/worker-profile.yaml",
         "{0}/kubelet.conf",
     ]
 
